@@ -161,6 +161,23 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--in
   .results-chapter-grid { grid-template-columns: repeat(2, 1fr); }
   .intro-chapters { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* BACK BUTTON */
+.back-btn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: var(--navy);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 99px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  transition: all 0.18s;
+}
+.back-btn:hover { background: var(--navy-soft); color: #fff; transform: translateY(-2px); }
 </style>
 </head>
 <body>
@@ -1292,6 +1309,9 @@ function showResults() {
   rs.style.display = 'block';
 
   const pct = Math.round((totalPoints / TOTAL) * 100);
+
+  // Save score to localStorage
+  try { localStorage.setItem('score_exam_simulator', JSON.stringify({ pct, pts: totalPoints.toFixed(1), total: TOTAL, date: new Date().toLocaleDateString() })); } catch(e) {}
   let msg = pct >= 90 ? 'Outstanding — exam ready.' : pct >= 80 ? 'Strong performance. Review the misses.' : pct >= 70 ? 'Passing. Focus on the weak chapters.' : 'Review carefully before the exam.';
 
   let chapterGrid = '';
@@ -1340,5 +1360,7 @@ function restart() {
   window.scrollTo(0, 0);
 }
 </script>
+
+<a class="back-btn" href="index.html">← Study Hub</a>
 </body>
 </html>

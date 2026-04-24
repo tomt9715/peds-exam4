@@ -128,6 +128,23 @@ body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--in
   .q-stem { font-size: 15px; }
   .results-score { font-size: 52px; }
 }
+
+/* BACK BUTTON */
+.back-btn {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 18px;
+  background: var(--navy);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 99px;
+  color: rgba(255,255,255,0.8);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  transition: all 0.18s;
+}
+.back-btn:hover { background: var(--navy-soft); color: #fff; transform: translateY(-2px); }
 </style>
 </head>
 <body>
@@ -403,7 +420,7 @@ const questions = [
     stem: 'The parents of a child diagnosed with advanced medulloblastoma ask the nurse what treatment options are available. Which response by the nurse is most therapeutic?',
     options: [
       '"This is a very serious diagnosis and there is nothing more we can do at this point."',
-      '"Treatment options include surgical removal, radiation, chemotherapy, and bone marrow transplant for advanced disease — and we will support your family throughout."',
+      '"Treatment options include surgery, radiation, chemotherapy, and BMT for advanced disease — our team will support you throughout."',
       '"You should focus on the positive — many children survive this completely."',
       '"The oncologist will handle all of that — my role is just to monitor vitals and give medications."'
     ],
@@ -424,10 +441,10 @@ const questions = [
     type: 'standard',
     stem: 'The nurse is educating a nursing student about pediatric leukemias. Which statement correctly distinguishes ALL from AML?',
     options: [
-      'ALL primarily affects adolescents while AML is most common in toddlers',
-      'ALL is the most common childhood cancer occurring in ages 2–10; AML occurs mostly in adolescents and has 8 subtypes used to guide treatment',
+      'ALL primarily affects adolescents; AML is most common in toddlers and young children',
+      'ALL is the most common childhood cancer, ages 2–10; AML occurs mostly in adolescents with 8 subtypes guiding treatment',
       'Both types present identically and are distinguished only by bone marrow biopsy',
-      'AML is always curable while ALL requires lifelong chemotherapy'
+      'AML is always curable while ALL requires lifelong chemotherapy maintenance'
     ],
     answer: 1,
     concept: 'ALL vs AML — Differentiation',
@@ -793,6 +810,9 @@ function showResults() {
   const rs = document.getElementById('results-screen');
   rs.style.display = 'block';
   const pct = Math.round((totalPoints / TOTAL) * 100);
+
+  // Save score to localStorage
+  try { localStorage.setItem('score_ch46_deepdrill', JSON.stringify({ pct, pts: totalPoints.toFixed(1), total: TOTAL, date: new Date().toLocaleDateString() })); } catch(e) {}
   const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
   let breakdownHTML = '';
   Object.entries(topicScores).forEach(([topic, s]) => {
@@ -838,5 +858,7 @@ function restart() {
 
 render();
 </script>
+
+<a class="back-btn" href="index.html">← Study Hub</a>
 </body>
 </html>

@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 41 — Cardiac</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540;
+  --navy-soft: #1a3a5c;
+  --teal: #0d9488;
+  --teal-soft: #14b8a6;
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --muted: #6b7280;
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --line: #e5e0d5;
+  --line-strong: #d4cdbd;
+  --correct: #059669;
+  --correct-bg: #ecfdf5;
+  --wrong: #dc2626;
+  --wrong-bg: #fef2f2;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* STICKY HEADER */
+.sticky-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy);
+  padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; letter-spacing: 0.01em; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+
+/* MAIN */
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+
+/* QUESTION CARD */
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.q-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.q-body { padding: 28px 28px 20px; }
+.q-stem {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px; line-height: 1.65;
+  color: var(--ink); margin-bottom: 8px;
+}
+.q-instruction {
+  font-size: 12px; color: var(--muted);
+  font-style: italic; margin-bottom: 22px;
+}
+
+/* LAB BOX */
+.lab-box {
+  background: #f0f9ff; border: 1px solid #bae6fd;
+  border-radius: 8px; padding: 12px 16px;
+  margin-bottom: 20px;
+}
+.lab-box-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #0369a1; margin-bottom: 8px; }
+.lab-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-soft); padding: 3px 0; border-bottom: 1px solid #e0f2fe; }
+.lab-row:last-child { border-bottom: none; }
+.lab-val { font-family: 'DM Mono', monospace; font-size: 12px; }
+
+/* OPTIONS */
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 13px 16px; border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--bg); cursor: pointer;
+  transition: all 0.16s ease;
+  font-size: 14px; line-height: 1.55;
+  color: var(--ink-soft); text-align: left; width: 100%;
+  font-family: 'Outfit', sans-serif;
+}
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+
+.opt-indicator {
+  min-width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-top: 1px; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+
+/* SATA submit */
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn {
+  padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.16s; letter-spacing: 0.03em;
+}
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+
+/* RATIONALE */
+.rationale-wrap {
+  margin: 0 28px 28px;
+  border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line);
+  animation: fadeUp 0.25s ease both;
+  display: none;
+}
+.rationale-wrap.show { display: block; }
+
+.rat-header {
+  padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+
+.rat-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em;
+}
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4;
+  padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.rat-answer {
+  font-family: 'DM Serif Display', serif; font-style: italic;
+  font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5;
+}
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+
+.rat-section-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-letter.m { background: var(--partial-bg); color: var(--partial); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+
+.sata-legend {
+  display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+
+/* NEXT BTN */
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn {
+  width: 100%; padding: 14px;
+  background: var(--navy); border: none; border-radius: 10px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+
+/* RESULTS */
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card {
+  background: var(--navy); border-radius: 20px; padding: 40px 32px;
+  text-align: center; margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.results-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b);
+}
+.results-score {
+  font-family: 'DM Serif Display', serif; font-style: italic;
+  font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px;
+}
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+
+.results-breakdown {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 24px; margin-bottom: 20px;
+}
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.retry-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+  border: none; border-radius: 12px; color: #fff;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em;
+}
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body, .options, .rationale-wrap, .next-wrap { padding-left: 16px; padding-right: 16px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 56px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 41 — Cardiac</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 20</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="quiz-screen">
+    <div class="q-card" id="q-card"></div>
+  </div>
+  <div id="results-screen"></div>
+</div>
+
+<script>
+const questions = [
+  // 1
+  {
+    topic: 'Shunt Classification',
+    type: 'standard',
+    stem: 'A nurse is teaching a student about congenital heart defects. Which statement correctly distinguishes a left-to-right shunt from a right-to-left shunt?',
+    options: [
+      'Left-to-right shunts cause cyanosis because blood bypasses the lungs',
+      'Right-to-left shunts send excess blood to the lungs, causing heart failure',
+      'Left-to-right shunts increase pulmonary blood flow and cause heart failure symptoms',
+      'Right-to-left shunts increase pulmonary blood flow and cause murmurs'
+    ],
+    answer: 2,
+    concept: 'Shunt Direction & Effects',
+    rationale: 'Left-to-right shunts send too much blood to the lungs → increased pulmonary blood flow → heart failure. Right-to-left shunts bypass the lungs entirely → decreased pulmonary blood flow → cyanosis (blue baby).',
+    deepExplanation: 'Left → Right = too much to Lungs = fluid overload = heart failure. Right → Left = blood goes the Wrong way = no oxygenation = cyanosis. This framework classifies every congenital defect.',
+    others: {
+      0: 'This describes a right-to-left shunt, not left-to-right.',
+      1: 'Right-to-left shunts BYPASS the lungs — they do not send excess blood there.',
+      3: 'Right-to-left shunts decrease pulmonary blood flow and cause cyanosis, not increased flow.'
+    }
+  },
+  // 2
+  {
+    topic: 'Defect Classification',
+    type: 'standard',
+    stem: 'A nursing student is reviewing congenital heart defects. Which defect belongs in the category of increased pulmonary blood flow?',
+    options: [
+      'Tetralogy of Fallot',
+      'Tricuspid Atresia',
+      'Patent Ductus Arteriosus',
+      'Pulmonary Atresia'
+    ],
+    answer: 2,
+    concept: 'Increased Pulmonary Blood Flow',
+    rationale: 'PDA is a left-to-right shunt — blood flows from the aorta through the patent ductus into the pulmonary artery, adding excess blood to the lungs. TOF and Tricuspid Atresia are right-to-left shunts with decreased pulmonary blood flow.',
+    deepExplanation: 'PDA, ASD, and VSD all cause left-to-right shunting → increased pulmonary blood flow → heart failure symptoms. PDA was specifically confirmed as a test answer for this category.',
+    others: {
+      0: 'TOF causes right-to-left shunting → decreased pulmonary blood flow → cyanosis.',
+      1: 'Tricuspid Atresia is a right-to-left shunt causing decreased pulmonary blood flow and cyanosis.',
+      3: 'Pulmonary Atresia is a cyanotic defect with decreased pulmonary blood flow.'
+    }
+  },
+  // 3
+  {
+    topic: 'Tetralogy of Fallot',
+    type: 'standard',
+    stem: 'A parent asks the nurse to explain what makes Tetralogy of Fallot different from other heart defects. Which response best describes the four components of TOF?',
+    options: [
+      'ASD, overriding aorta, left ventricular hypertrophy, and aortic stenosis',
+      'Pulmonary stenosis, VSD, overriding aorta, and right ventricular hypertrophy',
+      'PDA, tricuspid atresia, VSD, and pulmonary stenosis',
+      'VSD, ASD, overriding aorta, and left ventricular hypertrophy'
+    ],
+    answer: 1,
+    concept: 'TOF — Four Defects',
+    rationale: 'TOF is defined by exactly four defects: pulmonary stenosis, VSD, overriding aorta, and right ventricular hypertrophy. It is the most common cyanotic congenital heart defect.',
+    deepExplanation: 'A mnemonic: PROVE — Pulmonary stenosis, Right ventricular hypertrophy, Overriding aorta, VSD, Everything together = TOF. The VSD + pulmonary stenosis forces blood right-to-left, causing cyanosis.',
+    others: {
+      0: 'Left ventricular hypertrophy is not part of TOF — it is RIGHT ventricular hypertrophy. ASD is not a component.',
+      2: 'PDA and tricuspid atresia are separate defects — not components of TOF.',
+      3: 'ASD is not a component of TOF, and hypertrophy affects the RIGHT ventricle, not left.'
+    }
+  },
+  // 4
+  {
+    topic: 'Tet Spell',
+    type: 'standard',
+    stem: 'A 2-year-old with Tetralogy of Fallot becomes acutely cyanotic and agitated during a crying episode. The child\'s oxygen saturation drops to 72%. What is the priority nursing intervention?',
+    options: [
+      'Administer IV morphine and notify the provider',
+      'Place the child in knee-to-chest position and apply supplemental oxygen',
+      'Obtain a 12-lead ECG and prepare for cardioversion',
+      'Initiate IV access and administer normal saline bolus'
+    ],
+    answer: 1,
+    concept: 'Hypercyanotic Spell — Priority',
+    rationale: 'Knee-to-chest position is the priority intervention for a Tet spell. It increases systemic vascular resistance, which decreases the right-to-left shunt and forces more blood through the pulmonary circulation for oxygenation. Supplemental oxygen is given concurrently.',
+    deepExplanation: 'Tet spells are triggered by crying, feeding, or activity. Knee-to-chest mimics the squatting position older children instinctively adopt. It traps blood in the lower extremities, increasing afterload and redirecting flow to the lungs.',
+    others: {
+      0: 'Morphine may be used as a second-line intervention but positioning and O2 come first.',
+      2: 'A Tet spell is not a dysrhythmia — cardioversion is not indicated.',
+      3: 'A fluid bolus does not address the pathophysiology of a hypercyanotic spell.'
+    }
+  },
+  // 5
+  {
+    topic: 'Morphine in TOF',
+    type: 'standard',
+    stem: 'A nurse administers IV morphine to an infant experiencing a hypercyanotic episode. Which finding indicates the medication has achieved its therapeutic effect?',
+    options: [
+      'The infant\'s heart rate decreases from 180 to 100 bpm',
+      'The infant becomes calm and oxygen saturation rises to 88%',
+      'The infant\'s blood pressure increases and color improves to pink',
+      'The infant falls asleep and respiratory rate drops to 14'
+    ],
+    answer: 1,
+    concept: 'Morphine Therapeutic Effect — TOF',
+    rationale: 'The therapeutic effect of morphine in a Tet spell is that the infant becomes calm and oxygen saturation improves (e.g., 88%). Morphine relieves infundibular spasm and reduces the anxiety/agitation that drives hyperpnea, which worsens the right-to-left shunt.',
+    deepExplanation: 'Agitation increases O2 demand and worsens hyperpnea → more right-to-left shunting → deeper cyanosis. Morphine breaks this cycle by sedating the infant and relaxing the infundibular spasm. The goal is NOT a normal O2 sat — 88% is acceptable and expected improvement in a cyanotic heart defect.',
+    others: {
+      0: 'Heart rate reduction alone is not the therapeutic target — oxygenation and calmness are.',
+      2: 'Pink color would indicate overcorrection; these infants have baseline cyanosis.',
+      3: 'A respiratory rate of 14 in an infant is abnormally low and would suggest respiratory depression, an adverse effect.'
+    }
+  },
+  // 6
+  {
+    topic: 'Congestive Heart Failure',
+    type: 'standard',
+    stem: 'A 4-month-old infant is brought to the clinic with a known VSD. The parents report the infant tires easily during feedings and has not been gaining weight as expected. Which concept best explains this finding?',
+    options: [
+      'Polycythemia from chronic hypoxia',
+      'Malabsorption syndrome secondary to bowel ischemia',
+      'Congestive heart failure causing inability to gain weight',
+      'Increased metabolic demand from fever and infection'
+    ],
+    answer: 2,
+    concept: 'CHF — Failure to Thrive',
+    rationale: 'In pediatric congestive heart failure, infants use enormous energy just to breathe and feed. Feeding is the equivalent of exercise for a cardiac infant — they fatigue quickly, take in less calories, and burn more energy, resulting in failure to gain weight.',
+    deepExplanation: 'This is a hallmark finding of CHF in infants. The left-to-right shunt from VSD floods the lungs, increasing the work of breathing. Feeding requires sustained effort the infant cannot maintain. Weight gain failure and diaphoresis with feeds are classic CHF signs in this age group.',
+    others: {
+      0: 'Polycythemia occurs in cyanotic (right-to-left) defects, not left-to-right shunts like VSD.',
+      1: 'Malabsorption is not a mechanism of VSD-related poor weight gain.',
+      3: 'Nothing in the scenario suggests fever or infection.'
+    }
+  },
+  // 7
+  {
+    topic: 'Kawasaki Disease',
+    type: 'standard',
+    stem: 'A nurse is caring for a 3-year-old admitted with Kawasaki disease. The child has had a fever for 6 days, bilateral conjunctival injection, strawberry tongue, and peeling skin on the hands. Which medications does the nurse anticipate administering?',
+    options: [
+      'IV vancomycin and oral prednisone',
+      'IVIG and high-dose aspirin',
+      'IV methylprednisolone and low-dose aspirin',
+      'Oral amoxicillin and ibuprofen'
+    ],
+    answer: 1,
+    concept: 'Kawasaki — Management',
+    rationale: 'Kawasaki disease is treated with IVIG (intravenous immunoglobulin) to reduce inflammation and high-dose aspirin (80–100 mg/kg/day) for anti-inflammatory and antiplatelet effects. Once afebrile, aspirin is reduced to low-dose (3–5 mg/kg/day).',
+    deepExplanation: 'IVIG + aspirin is the confirmed management pair for Kawasaki. IVIG reduces the risk of coronary artery aneurysm — the most feared complication. Aspirin is one of the rare pediatric indications because the benefit outweighs the Reye syndrome risk here.',
+    others: {
+      0: 'Vancomycin targets bacterial infections — Kawasaki is an inflammatory vasculitis, not a bacterial infection.',
+      2: 'Methylprednisolone is not first-line for Kawasaki. The initial aspirin dose must be HIGH, not low.',
+      3: 'Amoxicillin treats bacterial infections. Ibuprofen is not the anti-inflammatory agent of choice here.'
+    }
+  },
+  // 8
+  {
+    topic: 'Kawasaki Disease',
+    type: 'standard',
+    stem: 'The nurse is teaching parents about long-term follow-up after their child\'s Kawasaki disease diagnosis. Which explanation is most accurate?',
+    options: [
+      'Once the fever resolves, no further cardiac monitoring is needed',
+      'The child will need coronary artery monitoring because Kawasaki is the leading cause of acquired heart disease in children',
+      'The child will require daily high-dose aspirin indefinitely',
+      'IVIG prevents all cardiac complications so follow-up echocardiograms are optional'
+    ],
+    answer: 1,
+    concept: 'Kawasaki — Long-Term Monitoring',
+    rationale: 'Kawasaki disease is the leading cause of acquired heart disease in children. Coronary artery aneurysms can develop even after the acute phase resolves, requiring long-term echocardiographic monitoring.',
+    deepExplanation: 'Parents must understand this is not just a fever illness — the coronary arteries are at risk for weeks after the acute phase. Once afebrile, aspirin drops to low-dose (3–5 mg/kg/day) — it is not maintained at high dose indefinitely.',
+    others: {
+      0: 'Cardiac monitoring is required long-term precisely because coronary complications can occur after resolution.',
+      2: 'High-dose aspirin is used only during the febrile phase — it transitions to low-dose once afebrile.',
+      3: 'IVIG reduces but does not eliminate the risk of coronary aneurysms. Follow-up echocardiograms are essential.'
+    }
+  },
+  // 9
+  {
+    topic: 'Infective Endocarditis',
+    type: 'sata',
+    stem: 'A child is admitted with suspected Infective Endocarditis. Which clinical findings does the nurse recognize as consistent with this diagnosis?',
+    options: [
+      'New cardiac murmur',
+      'Splinter hemorrhages under the nails',
+      'Strawberry tongue and peeling skin',
+      'Fever and fatigue',
+      'Signs of emboli',
+      'Bilateral lower extremity edema and JVD'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Infective Endocarditis — S/S',
+    rationale: 'Infective Endocarditis presents with fever, fatigue, a new murmur (from valve damage), splinter hemorrhages (nail beds), and embolic phenomena (from infected vegetations breaking off). JVD and bilateral edema are right-sided HF signs, not IE. Strawberry tongue and peeling skin are Kawasaki.',
+    perOptionExplanations: {
+      0: '<strong>New murmur</strong> — valve infection causes structural changes audible as a new or changing murmur.',
+      1: '<strong>Splinter hemorrhages</strong> — linear reddish-brown marks under nails from microemboli; classic IE finding.',
+      3: '<strong>Fever and fatigue</strong> — systemic infection signs present in IE.',
+      4: '<strong>Emboli</strong> — infected vegetations on valves can break off and travel; confirmed test answer to monitor for.'
+    },
+    others: {
+      2: 'Strawberry tongue and peeling skin are hallmarks of Kawasaki disease, not IE.',
+      5: 'JVD and bilateral edema suggest right-sided heart failure, not endocarditis specifically.'
+    }
+  },
+  // 10
+  {
+    topic: 'Infective Endocarditis',
+    type: 'standard',
+    stem: 'A child with a history of congenital heart disease is scheduled for a dental extraction. Which nursing action is most important prior to the procedure?',
+    options: [
+      'Hold all cardiac medications 24 hours before the procedure',
+      'Confirm that prophylactic antibiotics have been prescribed and administered',
+      'Apply a cardiac monitor and establish IV access in the procedure room',
+      'Obtain an echocardiogram to assess current valve function'
+    ],
+    answer: 1,
+    concept: 'IE — Prophylactic Antibiotics',
+    rationale: 'Children with congenital heart disease are at high risk for infective endocarditis during dental procedures because oral bacteria can enter the bloodstream. Prophylactic antibiotics must be given before dental and surgical procedures to prevent IE.',
+    deepExplanation: 'This is a nursing action priority — confirming the prophylactic ABX order and administration is the nurse\'s role. Dental procedures are a primary portal of entry for Streptococcal bacteria that cause IE in susceptible children.',
+    others: {
+      0: 'Holding cardiac medications is not indicated and could be harmful.',
+      2: 'While monitoring is good practice, the priority is infection prevention through prophylactic antibiotics.',
+      3: 'An echocardiogram is not required before every dental procedure.'
+    }
+  },
+  // 11
+  {
+    topic: 'Rheumatic Fever',
+    type: 'standard',
+    stem: 'A child is diagnosed with Rheumatic Fever following an untreated pharyngitis episode. The nurse explains which primary cardiac complication to the family?',
+    options: [
+      'Coronary artery aneurysm formation',
+      'Permanent damage to the heart valves, most commonly the mitral valve',
+      'Right ventricular hypertrophy and pulmonary stenosis',
+      'Atrial septal defect from inflammatory erosion'
+    ],
+    answer: 1,
+    concept: 'Rheumatic Fever — Complication',
+    rationale: 'Rheumatic Heart Disease is the primary complication of rheumatic fever. The immune response to Group A Strep cross-reacts with heart tissue, causing permanent valve damage — most commonly to the mitral valve.',
+    deepExplanation: 'Rheumatic fever follows UNTREATED Group A Strep (strep throat). The body\'s immune response attacks the heart valves — this is why treating strep throat promptly with antibiotics is so critical. The mitral valve is the most commonly affected.',
+    others: {
+      0: 'Coronary artery aneurysm is the complication of Kawasaki disease, not rheumatic fever.',
+      2: 'Right ventricular hypertrophy and pulmonary stenosis are components of TOF.',
+      3: 'ASDs are congenital structural defects — rheumatic fever causes valve damage, not septal defects.'
+    }
+  },
+  // 12
+  {
+    topic: 'Rheumatic Fever',
+    type: 'standard',
+    stem: 'The provider orders a laboratory test to confirm that a recent streptococcal infection triggered a child\'s current inflammatory illness. Which lab does the nurse anticipate?',
+    options: [
+      'C-reactive protein (CRP)',
+      'Erythrocyte sedimentation rate (ESR)',
+      'Anti-streptolysin O (ASO) titer',
+      'Throat culture for Group B Strep'
+    ],
+    answer: 2,
+    concept: 'Rheumatic Fever — Confirming Lab',
+    rationale: 'The Anti-Streptolysin O (ASO) titer detects antibodies produced against streptolysin O, a toxin released by Group A Strep. An elevated ASO titer confirms a recent streptococcal infection as the trigger for rheumatic fever.',
+    deepExplanation: 'By the time rheumatic fever develops, the active strep infection may have resolved, so a throat culture can be negative. The ASO titer catches the immune evidence of a prior strep infection. This was confirmed as a specific test question.',
+    others: {
+      0: 'CRP indicates inflammation but does not confirm strep as the cause.',
+      1: 'ESR confirms inflammation (which is elevated in rheumatic fever) but does not identify strep as the trigger.',
+      3: 'Group B Strep causes neonatal infections — Group A Strep causes pharyngitis and rheumatic fever. And a throat culture cannot confirm a PAST infection.'
+    }
+  },
+  // 13
+  {
+    topic: 'Right-Sided Heart Failure',
+    type: 'standard',
+    stem: 'The nurse is assessing a child with right-sided heart failure. Which finding is most expected?',
+    options: [
+      'Pulmonary crackles, pink frothy sputum, and orthopnea',
+      'Peripheral edema, hepatomegaly, and jugular venous distension',
+      'Sudden severe chest pain and diaphoresis',
+      'Stridor, tachypnea, and hypoxia at rest'
+    ],
+    answer: 1,
+    concept: 'Right-Sided HF — S/S',
+    rationale: 'Right-sided heart failure causes blood to back up into the systemic circulation: peripheral edema, weight gain, abdominal distention, hepatomegaly, and JVD. Pulmonary crackles and frothy sputum indicate left-sided failure.',
+    deepExplanation: 'Think of right-sided failure as backing up "out into the body" — everything downstream of the right heart (venous system, liver, peripheral tissue) becomes congested. Left-sided failure backs up into the lungs.',
+    others: {
+      0: 'Pulmonary crackles and frothy sputum are left-sided HF findings — fluid backs into the lungs.',
+      2: 'Chest pain and diaphoresis suggest myocardial ischemia, not heart failure.',
+      3: 'Stridor suggests an airway problem, not heart failure.'
+    }
+  },
+  // 14
+  {
+    topic: 'Right-Sided Heart Failure',
+    type: 'standard',
+    stem: 'A nurse is caring for a child with right-sided heart failure. Which two nursing assessments are most essential to monitor daily?',
+    options: [
+      'Pupillary response and grip strength',
+      'Daily weights and strict intake and output',
+      'Blood glucose and urine specific gravity',
+      'Capillary refill and skin turgor'
+    ],
+    answer: 1,
+    concept: 'Right-Sided HF — Nursing Assessment',
+    rationale: 'Daily weights detect fluid retention (even 1 lb overnight indicates significant fluid accumulation) and strict I&O monitors fluid balance in heart failure. These are the two priority ongoing assessments for any pediatric heart failure patient.',
+    deepExplanation: 'Both daily weights and strict I&O were yellow-highlighted in the notes — your professor specifically flagged these. A daily weight increase of more than 0.5 kg in an infant or 1 kg in an older child warrants notification of the provider.',
+    others: {
+      0: 'Pupillary response and grip strength are neurological assessments not specific to HF.',
+      2: 'Blood glucose and specific gravity are not the priority assessments for HF monitoring.',
+      3: 'Cap refill and turgor assess perfusion and hydration but are not the daily monitoring priorities for HF.'
+    }
+  },
+  // 15
+  {
+    topic: 'VSD',
+    type: 'standard',
+    stem: 'During a routine assessment of an infant with a known Ventricular Septal Defect, the nurse auscultates a murmur. How would the nurse best characterize the typical murmur associated with VSD?',
+    options: [
+      'Soft diastolic murmur heard best at the right upper sternal border',
+      'Continuous machine-like murmur heard below the left clavicle',
+      'Loud harsh murmur heard at the left sternal border',
+      'Low-pitched rumbling murmur at the apex'
+    ],
+    answer: 2,
+    concept: 'VSD — Murmur Characteristics',
+    rationale: 'VSD produces a loud, harsh holosystolic murmur best heard at the left sternal border. The turbulence is caused by blood shunting from the high-pressure left ventricle through the defect into the right ventricle.',
+    deepExplanation: 'The continuous machine-like murmur (option B) is classic for PDA. The right upper sternal border murmur is associated with aortic stenosis. VSD = left sternal border, loud and harsh.',
+    others: {
+      0: 'A soft diastolic murmur at the right upper sternal border is not characteristic of VSD.',
+      1: 'A continuous machine-like murmur is the classic description of Patent Ductus Arteriosus.',
+      3: 'A low-pitched rumbling apical murmur is associated with mitral stenosis.'
+    }
+  },
+  // 16
+  {
+    topic: 'Aortic Stenosis',
+    type: 'sata',
+    stem: 'The nurse is reviewing the chart of a child with aortic stenosis. Which findings are consistent with this diagnosis?',
+    options: [
+      'Systolic murmur at the right upper sternal border',
+      'Syncope or dizziness with exertion',
+      'Currant jelly stools and intermittent abdominal pain',
+      'Chest pain with activity',
+      'Fatigue and poor feeding in infants',
+      'Sudden relief of chest pain at rest'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Aortic Stenosis — S/S',
+    rationale: 'Aortic stenosis narrows the aortic valve outlet, obstructing left ventricular outflow. Classic findings: systolic murmur at the right upper sternal border, syncope/dizziness with exertion, chest pain with activity, and in infants — fatigue, poor feeding, and heart failure signs.',
+    perOptionExplanations: {
+      0: '<strong>Systolic murmur at right upper sternal border</strong> — aortic valve area; hallmark location for aortic stenosis murmur.',
+      1: '<strong>Syncope/dizziness with exertion</strong> — obstructed outflow means cardiac output cannot increase with demand; brain gets insufficient perfusion.',
+      3: '<strong>Chest pain with activity</strong> — increased demand cannot be met due to fixed obstruction; myocardial ischemia results.',
+      4: '<strong>Fatigue and poor feeding in infants</strong> — heart failure manifestation in young infants with severe aortic stenosis.'
+    },
+    others: {
+      2: 'Currant jelly stools and abdominal pain are hallmark signs of intussusception — a GI emergency, not aortic stenosis.',
+      5: 'Sudden relief of chest pain at rest is not a defining feature of aortic stenosis.'
+    }
+  },
+  // 17
+  {
+    topic: 'Tricuspid Atresia',
+    type: 'standard',
+    stem: 'The nurse is reviewing a chart for an infant with tricuspid atresia. Which clinical findings does the nurse expect?',
+    options: [
+      'Peripheral edema, hepatomegaly, and absent cyanosis',
+      'Cyanosis, tachycardia, dyspnea, and digital clubbing',
+      'Hypertension, bounding pulses, and diaphoresis with feeds',
+      'Intermittent cyanosis only with crying, resolving at rest'
+    ],
+    answer: 1,
+    concept: 'Tricuspid Atresia — S/S',
+    rationale: 'Tricuspid atresia is complete closure of the tricuspid valve. No blood can flow from the right atrium to the right ventricle through the normal pathway → cyanosis. Signs include cyanosis, tachycardia, dyspnea, and digital clubbing from chronic hypoxia.',
+    deepExplanation: 'Clubbing (digital) develops over time in chronically hypoxic children as the body tries to increase oxygen delivery to peripheral tissues. Tricuspid atresia is a right-to-left shunt defect — blood bypasses the pulmonary circulation.',
+    others: {
+      0: 'Peripheral edema and absent cyanosis describe right-sided HF, not tricuspid atresia.',
+      2: 'Bounding pulses and diaphoresis with feeds are more consistent with PDA or left-sided shunts.',
+      3: 'Intermittent cyanosis only with crying is more typical of a small ASD or mild defect — tricuspid atresia produces constant cyanosis.'
+    }
+  },
+  // 18
+  {
+    topic: 'Kawasaki Disease',
+    type: 'standard',
+    stem: 'A nurse is administering aspirin to a child with Kawasaki disease who became afebrile yesterday. The order reads: aspirin 80 mg/kg/day PO. The nurse questions this order because:',
+    options: [
+      'Aspirin is contraindicated in all children under 12 years of age',
+      'The dose should transition to 3–5 mg/kg/day now that the child is afebrile',
+      'IVIG must be completed before aspirin can be started',
+      'Aspirin should be discontinued entirely once fever resolves in Kawasaki disease'
+    ],
+    answer: 1,
+    concept: 'Kawasaki — Aspirin Dosing Transition',
+    rationale: 'In Kawasaki disease, high-dose aspirin (80–100 mg/kg/day) is used during the febrile phase for anti-inflammatory effects. Once the child becomes afebrile, the dose transitions to low-dose (3–5 mg/kg/day) for antiplatelet effects to protect the coronary arteries.',
+    deepExplanation: 'The nurse must recognize this transition point. Continuing high-dose aspirin after fever resolution is incorrect — the purpose of the drug changes from anti-inflammatory to antiplatelet, requiring a much lower dose.',
+    others: {
+      0: 'Aspirin IS used in children for specific indications including Kawasaki disease, despite the general Reye syndrome concern.',
+      2: 'IVIG and aspirin are given concurrently — there is no required sequencing between them.',
+      3: 'Aspirin is NOT discontinued after fever — it continues at low dose for antiplatelet protection.'
+    }
+  },
+  // 19
+  {
+    topic: 'Shunt Classification',
+    type: 'sata',
+    stem: 'The nurse is educating a group of nursing students about congenital heart defects with increased pulmonary blood flow. Which defects should be included in this category?',
+    options: [
+      'Atrial Septal Defect (ASD)',
+      'Tetralogy of Fallot (TOF)',
+      'Patent Ductus Arteriosus (PDA)',
+      'Tricuspid Atresia',
+      'Ventricular Septal Defect (VSD)',
+      'Pulmonary Stenosis (isolated)'
+    ],
+    answerArr: [0, 2, 4],
+    concept: 'Increased Pulmonary Blood Flow Defects',
+    rationale: 'ASD, PDA, and VSD all produce left-to-right shunts, sending excess blood to the pulmonary circulation → increased pulmonary blood flow → heart failure. TOF, Tricuspid Atresia, and isolated Pulmonary Stenosis produce right-to-left shunts or obstruction → decreased pulmonary blood flow → cyanosis.',
+    perOptionExplanations: {
+      0: '<strong>ASD</strong> — left-to-right shunt at the atrial level → excess blood to lungs.',
+      2: '<strong>PDA</strong> — left-to-right shunt from aorta to pulmonary artery → increased pulmonary flow. Confirmed test answer.',
+      4: '<strong>VSD</strong> — left-to-right shunt at the ventricular level → most common congenital heart defect overall.'
+    },
+    others: {
+      1: 'TOF causes right-to-left shunting → decreased pulmonary blood flow → cyanosis.',
+      3: 'Tricuspid Atresia causes right-to-left shunting → decreased pulmonary blood flow → cyanosis.',
+      5: 'Isolated pulmonary stenosis obstructs right ventricular outflow → decreased pulmonary blood flow.'
+    }
+  },
+  // 20
+  {
+    topic: 'Priority — Cardiac',
+    type: 'standard',
+    stem: 'The nurse is caring for four pediatric patients. Which patient should the nurse assess first?',
+    options: [
+      'A child with Kawasaki disease whose fever just broke and is eating well',
+      'A child with right-sided heart failure awaiting daily weight measurement',
+      'A child with sickle cell disease reporting chest pain',
+      'A child with VSD scheduled for an echocardiogram in one hour'
+    ],
+    answer: 2,
+    concept: 'Prioritization — Cardiac Emergencies',
+    rationale: 'Chest pain in a sickle cell patient represents Acute Chest Syndrome — a life-threatening emergency requiring immediate assessment. It is the most urgent finding among these four patients. The others are important but are not presenting with acute emergent symptoms.',
+    deepExplanation: 'This was specifically recalled as a test question: "priority question: who would you see first — sickle cell patient with chest pain." Acute Chest Syndrome in sickle cell = treat like an emergency. Always prioritize new acute symptoms, especially chest pain, over scheduled or routine assessments.',
+    others: {
+      0: 'A Kawasaki patient who is afebrile and eating well is improving — not an acute concern.',
+      1: 'Daily weights are important but this is a routine scheduled assessment, not an emergency.',
+      3: 'A scheduled echocardiogram is a planned diagnostic test — not an urgent assessment need.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let current = 0;
+let totalPoints = 0;
+let answered = false;
+let selectedSATA = new Set();
+let missedItems = [];
+let topicScores = {};
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render() {
+  answered = false;
+  selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+
+  // META
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${questions.length}</span>`;
+  card.appendChild(meta);
+
+  // BODY
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  if (q.lab) {
+    const lb = el('div', 'lab-box');
+    lb.innerHTML = `<div class="lab-box-title">${q.lab.label}</div>` +
+      q.lab.rows.map(r => `<div class="lab-row"><span>${r.name}</span><span class="lab-val">${r.value}</span></div>`).join('');
+    body.appendChild(lb);
+  }
+  card.appendChild(body);
+
+  // OPTIONS
+  const opts = el('div', 'options');
+  const letters = ['A','B','C','D','E','F'];
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt');
+    btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${letters[i]}</span><span>${txt}</span>`;
+    if (q.type === 'standard') btn.onclick = () => selectStandard(i);
+    else btn.onclick = () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  // SATA submit
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.textContent = 'Submit Answer'; sb.id = 'sata-btn';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+
+  // RATIONALE placeholder
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+
+  // NEXT
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === questions.length - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+
+  updateHeader();
+
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+// ── SELECTION ──────────────────────────────────────────────────────────────
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(i === q.answer ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q, i);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const missed = correct.filter(i => !sel.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts;
+  trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, correct.map(i => q.options[i]).join('; '), pts);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  document.getElementById('sata-btn').style.display = 'none';
+  showRationaleSATA(pts, q, correctSel, wrongSel, missed);
+}
+
+// ── RATIONALE ──────────────────────────────────────────────────────────────
+function showRationaleStandard(isCorrect, q, selected) {
+  const rat = document.getElementById('rationale');
+  const letters = ['A','B','C','D','E','F'];
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      const type = i === q.answer ? 'c' : 'w';
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${type}">${letters[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${letters[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q, correctSel, wrongSel, missed) {
+  const rat = document.getElementById('rationale');
+  const letters = ['A','B','C','D','E','F'];
+  const isFullCredit = pts === 1;
+  const isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${letters[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${letters[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  const answerLetters = q.answerArr.map(i => letters[i]).join(', ');
+  const answerText = q.answerArr.map(i => q.options[i]).join('; ');
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${answerLetters} — ${answerText}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+// ── TRACKING ───────────────────────────────────────────────────────────────
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts;
+  topicScores[topic].total += total;
+}
+function recordMiss(q, answerText, pts) {
+  missedItems.push({ q, answerText, pts });
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────
+function nextQ() {
+  current++;
+  if (current >= questions.length) showResults();
+  else render();
+}
+
+function updateHeader() {
+  const maxPts = questions.length;
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${maxPts}`;
+  document.getElementById('progress-bar').style.width = `${(current / questions.length) * 100}%`;
+}
+
+// ── RESULTS ────────────────────────────────────────────────────────────────
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round((totalPoints / questions.length) * 100);
+  let msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+
+  // Topic breakdown
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+
+  // Missed items
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section">
+      <div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach((m, i) => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      missedHTML += `<div class="missed-item">
+        <div class="missed-item-concept">${m.q.concept}</div>
+        <div class="missed-item-q"><strong>Q${missedItems.indexOf(m)+1}:</strong> ${m.q.stem.substring(0,100)}...</div>
+        <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+        <div class="missed-item-rat">${m.q.rationale}</div>
+      </div>`;
+    });
+    missedHTML += '</div>';
+  }
+
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${questions.length}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown">
+      <div class="breakdown-title">Topic Breakdown</div>
+      ${breakdownHTML}
+    </div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

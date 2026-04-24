@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 46 — Heme/Onco Deep Drill</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c; --teal: #0d9488; --teal-soft: #14b8a6;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --bg: #fafaf7;
+  --card: #ffffff; --line: #e5e0d5; --line-strong: #d4cdbd;
+  --correct: #059669; --correct-bg: #ecfdf5; --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+  --confirmed: #7c3aed; --confirmed-bg: #f5f3ff; --confirmed-border: #ddd6fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+.sticky-header {
+  position: sticky; top: 0; z-index: 100; background: var(--navy); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+.q-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06); animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.q-meta { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+.confirmed-banner { display: flex; align-items: center; gap: 8px; padding: 9px 24px; background: var(--confirmed-bg); border-bottom: 1px solid var(--confirmed-border); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--confirmed); font-weight: 500; }
+.confirmed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 3px rgba(124,58,237,0.2); }
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55; color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif; }
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+.opt-indicator { min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s; }
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn { padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.16s; }
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+.rationale-wrap { margin: 0 28px 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both; }
+.rationale-wrap.show { display: block; }
+.rat-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px; }
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn { width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card { background: var(--navy); border-radius: 20px; padding: 40px 32px; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+.results-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-confirmed { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--confirmed-bg); color: var(--confirmed); border: 1px solid var(--confirmed-border); padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; margin-left: 4px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.retry-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 46 — Heme/Onco · Deep Drill</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 20</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+<div class="main">
+  <div id="quiz-screen"><div class="q-card" id="q-card"></div></div>
+  <div id="results-screen"></div>
+</div>
+<script>
+const questions = [
+  // 1 — Transfusion reaction confirmed
+  {
+    topic: 'Blood Transfusion Reaction',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child receiving a packed red blood cell transfusion develops fever, chills, and back pain 10 minutes into the infusion. The parent asks the nurse why the medication is being removed. Which response by the nurse is most accurate?',
+    options: [
+      '"We are slowing the rate to reduce the reaction before continuing."',
+      '"We are stopping the infusion immediately because these symptoms suggest a transfusion reaction."',
+      '"We are pausing briefly to administer diphenhydramine, then we will restart."',
+      '"We are switching to a different blood type that may be better tolerated."'
+    ],
+    answer: 1,
+    concept: 'Transfusion Reaction — Stop First',
+    rationale: 'The very first action in any suspected transfusion reaction is to STOP the infusion immediately. Then maintain IV access with normal saline, notify the provider, send the blood bag to the blood bank, and monitor vitals. Never slow the rate — stop completely.',
+    deepExplanation: 'Two layers: know to stop the infusion AND be able to explain it to the parent. Slowing the rate continues exposing the child to incompatible blood. Diphenhydramine and restarting is inappropriate for a suspected hemolytic reaction. The blood bag goes back to the lab for analysis.',
+    others: {
+      0: 'Slowing the rate continues exposing the child to potentially incompatible blood — the infusion must be stopped completely.',
+      2: 'Administering Benadryl and restarting is the approach for mild allergic reactions only — not fever, chills, and back pain which suggest hemolysis.',
+      3: 'Switching blood types at the bedside without provider order and blood bank verification is never appropriate.'
+    }
+  },
+  // 2 — Neutropenic precautions SATA confirmed
+  {
+    topic: 'Neutropenic Precautions',
+    confirmed: true,
+    type: 'sata',
+    stem: 'The nurse is orienting a new staff member to the care of a child on neutropenic precautions after chemotherapy. Which instructions should the nurse include?',
+    options: [
+      'Place the child in reverse isolation to protect them from environmental organisms',
+      'Fresh flowers and plants are acceptable if they are kept away from the child\'s face',
+      'Monitor temperature closely — any fever is considered a sign of infection until proven otherwise',
+      'Avoid rectal temperatures and rectal medications',
+      'Live vaccines are contraindicated during this period',
+      'Limit visitors and exclude anyone with signs of illness'
+    ],
+    answerArr: [0, 2, 3, 4, 5],
+    concept: 'Neutropenic Precautions',
+    rationale: 'Neutropenic precautions: reverse isolation, monitor fever as infection indicator, no rectal temps or meds (infection risk), no live vaccines (immunocompromised), and limit/screen visitors. Fresh flowers and plants are PROHIBITED — they harbor bacteria and fungal spores that can cause serious infections in neutropenic patients.',
+    perOptionExplanations: {
+      0: '<strong>Reverse isolation</strong> — protects the immunocompromised patient FROM the environment, not the environment from the patient.',
+      2: '<strong>Monitor fever</strong> — fever is the primary early sign of infection in a neutropenic patient; any temperature elevation requires immediate evaluation.',
+      3: '<strong>No rectal temps or meds</strong> — rectal mucosa is fragile in neutropenic patients; rectal procedures create infection entry points.',
+      4: '<strong>No live vaccines</strong> — a neutropenic patient cannot mount an immune response and may develop infection from a live attenuated vaccine.',
+      5: '<strong>Limit visitors and exclude sick contacts</strong> — the child\'s only defense against infection is environmental control.'
+    },
+    others: {
+      1: 'Fresh flowers and plants are strictly PROHIBITED in neutropenic patients — they carry bacteria and fungal spores that can cause fatal infections in immunocompromised children.'
+    }
+  },
+  // 3 — Sickle cell crisis hydration confirmed
+  {
+    topic: 'Sickle Cell Crisis',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with sickle cell disease is admitted in vaso-occlusive crisis with severe pain in the legs and abdomen. Which nursing intervention takes priority?',
+    options: [
+      'Administer supplemental oxygen at 2L via nasal cannula regardless of saturation',
+      'Initiate aggressive IV hydration to reduce sickling and improve blood flow',
+      'Place the child on contact precautions and restrict activity',
+      'Obtain blood cultures and begin empiric IV antibiotics'
+    ],
+    answer: 1,
+    concept: 'Sickle Cell Crisis — Hydration Priority',
+    rationale: 'Aggressive IV hydration is the priority intervention in vaso-occlusive sickle cell crisis. Hydration dilutes the blood, reduces blood viscosity, and improves flow through occluded vessels — directly addressing the underlying pathophysiology. Confirmed test answer: hydration is priority.',
+    deepExplanation: 'Two layers: know the priority interventions for sickle cell crisis AND rank them. Hydration first, then pain management, oxygen only if hypoxic (not automatic), and blood products if severe. Contact precautions are not indicated — sickle cell is not infectious. Antibiotics are for infection, not crisis alone.',
+    others: {
+      0: 'Oxygen is given only if hypoxia is present — automatic oxygen administration without indication is not the priority intervention.',
+      2: 'Contact precautions are for infectious conditions — sickle cell vaso-occlusive crisis is not infectious.',
+      3: 'Antibiotics are indicated for infection — not for vaso-occlusive crisis alone without signs of infection.'
+    }
+  },
+  // 4 — Sickle cell trigger confirmed
+  {
+    topic: 'Sickle Cell — Triggers',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is providing education to the family of a child newly diagnosed with sickle cell disease about what can trigger a vaso-occlusive crisis. Which statement by the nurse is most accurate?',
+    options: [
+      '"Crises are unpredictable and have no identifiable triggers — they occur randomly."',
+      '"High-fat meals and lack of exercise are the primary triggers for sickle cell crisis."',
+      '"Infection is one of the most common triggers for a sickle cell crisis — preventing illness is a key management goal."',
+      '"Crises only occur when the child is dehydrated — staying hydrated completely prevents all episodes."'
+    ],
+    answer: 2,
+    concept: 'Sickle Cell — Crisis Triggers',
+    rationale: 'Infection is one of the most common and dangerous triggers for sickle cell crisis. Other triggers include dehydration, hypoxia, cold temperatures, stress, and high altitude. Confirmed test answer: infection can predispose a sickle cell crisis.',
+    deepExplanation: 'Two layers: know the triggers AND understand that infection specifically was confirmed on the test. Infection causes inflammatory states that promote sickling. This is why sickle cell patients require prophylactic penicillin in early childhood and vaccinations. Hydration is important but does not completely prevent all crises.',
+    others: {
+      0: 'Crises have well-identified triggers — infection, dehydration, hypoxia, cold, and stress are all documented triggers.',
+      1: 'High-fat meals are not a sickle cell trigger — infection, dehydration, and hypoxia are the primary ones.',
+      3: 'Hydration is critical but dehydration is just one trigger — infection and other factors can also precipitate a crisis even in a well-hydrated child.'
+    }
+  },
+  // 5 — Sickle cell chest pain priority confirmed
+  {
+    topic: 'Sickle Cell — Priority',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is assigned to four patients. Which patient should be assessed first?',
+    options: [
+      'A child with sickle cell disease whose pain is rated 6/10 and is due for the next analgesic dose',
+      'A child with iron deficiency anemia waiting for an oral iron supplement',
+      'A child with sickle cell disease reporting new onset chest pain and shortness of breath',
+      'A child with ITP who has a new petechial rash on the lower legs'
+    ],
+    answer: 2,
+    concept: 'Sickle Cell — Acute Chest Syndrome Priority',
+    rationale: 'New chest pain and shortness of breath in a sickle cell patient signals Acute Chest Syndrome — the leading cause of death in sickle cell disease. This is a life-threatening emergency requiring immediate assessment. Confirmed test answer: sickle cell with chest pain = see first.',
+    deepExplanation: 'Two layers: identify Acute Chest Syndrome from the clinical description AND prioritize it correctly over four patients. Controlled pain at 6/10 awaiting medication is expected. Iron supplements are routine. New petechiae in ITP are important but not immediately life-threatening. Chest pain + SOB in sickle cell = Acute Chest Syndrome = emergency.',
+    others: {
+      0: 'A sickle cell patient with controlled pain awaiting a scheduled dose is not emergent compared to Acute Chest Syndrome.',
+      1: 'Administering an oral iron supplement is a routine task — not an urgent assessment.',
+      3: 'New petechiae in ITP indicate platelet destruction and are important to monitor, but they do not represent the same immediate life threat as Acute Chest Syndrome.'
+    }
+  },
+  // 6 — Hemophilia lab confirmed
+  {
+    topic: 'Hemophilia',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is reviewing lab results for a child admitted with suspected hemophilia. Which laboratory finding most directly supports this diagnosis?',
+    options: [
+      'Decreased hemoglobin and hematocrit with elevated TIBC',
+      'Elevated white blood cell count with left shift',
+      'Prolonged activated partial thromboplastin time with normal platelet count',
+      'Decreased platelet count with positive antinuclear antibody'
+    ],
+    answer: 2,
+    concept: 'Hemophilia — Lab Findings',
+    rationale: 'Hemophilia is a clotting factor deficiency in the intrinsic coagulation pathway → prolonged aPTT. Platelet count and PT are normal because platelets work fine and the extrinsic pathway is intact. Confirmed test answer: hemophilia → aPTT is prolonged.',
+    deepExplanation: 'Two layers: know hemophilia affects the intrinsic pathway (aPTT) AND know that PT and platelets are NORMAL. aPTT = intrinsic pathway = factors VIII or IX deficient in hemophilia. PT = extrinsic pathway = unaffected. Decreased Hgb/Hct + elevated TIBC = iron deficiency anemia. Decreased platelets = ITP or thrombocytopenia.',
+    others: {
+      0: 'Decreased Hgb/Hct with elevated TIBC describes iron deficiency anemia — not hemophilia.',
+      1: 'Elevated WBC with left shift indicates infection or inflammation — not a clotting disorder.',
+      3: 'Decreased platelet count describes thrombocytopenia or ITP — hemophilia has normal platelets.'
+    }
+  },
+  // 7 — ITP recognition confirmed
+  {
+    topic: 'ITP',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 5-year-old is brought to the clinic two weeks after recovering from a viral illness. The parent reports bruising easily and notices pinpoint red dots all over the child\'s body that do not turn white when pressed. The nurse recognizes these findings as which condition?',
+    options: [
+      'Henoch-Schönlein Purpura from IgA vasculitis',
+      'Meningococcemia requiring immediate isolation',
+      'Immune Thrombocytopenic Purpura following a viral illness',
+      'Hemophilia presenting with subcutaneous bleeding'
+    ],
+    answer: 2,
+    concept: 'ITP — Recognition',
+    rationale: 'ITP is an immune-mediated destruction of platelets following a viral illness. Petechiae (pinpoint hemorrhages that do not blanch) and purpura (larger purple areas where blood collects under tissue) develop because platelet counts are too low to stop minor bleeding. Post-viral onset is classic.',
+    deepExplanation: 'Two layers: recognize ITP from the clinical picture (post-viral + non-blanching petechiae) AND know why they don\'t blanch. Non-blanching = blood is outside the vessels under the skin — pressing cannot push it away like it does with a capillary blush. This distinguishes petechiae from other rashes.',
+    others: {
+      0: 'HSP presents with a palpable purpuric rash on the buttocks and lower extremities with joint pain and abdominal symptoms — different presentation.',
+      1: 'Meningococcemia presents with rapidly spreading purpuric rash with fever and sepsis — an emergency, but the post-viral onset and isolated bleeding signs here point to ITP.',
+      3: 'Hemophilia causes deep tissue bleeding like hemarthrosis — not the surface petechiae and purpura pattern described here.'
+    }
+  },
+  // 8 — Iron deficiency anemia priority confirmed
+  {
+    topic: 'Iron Deficiency Anemia — Priority',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is triaging four patients in the hematology clinic. Which patient should be seen first?',
+    options: [
+      'A 2-year-old with mild pallor and fatigue whose diet consists mainly of whole milk',
+      'A 15-year-old with heavy menstrual periods reporting fatigue, pallor, and a hemoglobin of 7.2 g/dL',
+      'A 6-year-old with suspected pica who has been eating ice and soil',
+      'A 10-year-old with brittle spoon-shaped nails and mild tachycardia'
+    ],
+    answer: 1,
+    concept: 'Iron Deficiency Anemia — Priority Patient',
+    rationale: 'The 15-year-old with heavy menstrual bleeding and a hemoglobin of 7.2 g/dL is the priority — a Hgb of 7.2 is severely low and combined with ongoing blood loss from menstruation represents the most acute situation. Confirmed test answer: 15-year-old with heavy menstrual period.',
+    deepExplanation: 'Two layers: know the signs of iron deficiency anemia AND triage by acuity. Hemoglobin of 7.2 with active ongoing blood loss = most urgent. The 2-year-old\'s diet history suggests chronic deficiency but is less acute. Pica is a sign of iron deficiency but not the most urgent presentation. Spoon nails with mild tachycardia is concerning but less acute than a Hgb of 7.2.',
+    others: {
+      0: 'A 2-year-old with dietary iron deficiency has mild symptoms — important to address but not as urgent as a Hgb of 7.2 with active blood loss.',
+      2: 'Pica is a sign of iron deficiency but without a known hemoglobin level or acute blood loss, this is less urgent than the 15-year-old.',
+      3: 'Spoon nails and mild tachycardia indicate chronic iron deficiency — important but less acute than a Hgb of 7.2 with heavy menstrual bleeding.'
+    }
+  },
+  // 9 — Iron deficiency treatment
+  {
+    topic: 'Iron Deficiency Anemia — Treatment',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is providing discharge education to the family of a child with iron deficiency anemia who is starting oral iron supplements. Which instruction maximizes the therapeutic effect of the medication?',
+    options: [
+      'Give iron with milk to reduce stomach upset and improve absorption',
+      'Give iron between meals with a source of Vitamin C such as orange juice',
+      'Give iron with a high-fiber meal to slow absorption and reduce side effects',
+      'Give iron at bedtime with a small snack containing dairy'
+    ],
+    answer: 1,
+    concept: 'Iron Supplementation — Administration',
+    rationale: 'Oral iron is best absorbed on an empty stomach or between meals. Vitamin C (ascorbic acid) significantly enhances iron absorption by converting ferric iron to the more absorbable ferrous form. Milk, dairy, and high-fiber foods all inhibit iron absorption.',
+    deepExplanation: 'Two layers: know the correct timing (between meals/empty stomach) AND the enhancer (Vitamin C). Common teaching errors: giving iron with milk (calcium competes with iron absorption), giving with fiber (binds iron and reduces absorption), or giving at bedtime with dairy. Orange juice is the classic Vitamin C vehicle.',
+    others: {
+      0: 'Milk contains calcium which directly competes with and inhibits iron absorption — this is the most common mistake to avoid.',
+      2: 'High-fiber foods bind iron and reduce absorption — iron should not be taken with fiber-rich meals.',
+      3: 'Dairy at bedtime inhibits iron absorption — Vitamin C is the correct pairing.'
+    }
+  },
+  // 10 — Neuroblastoma do not palpate
+  {
+    topic: 'Neuroblastoma',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for a child with a suspected abdominal mass later identified as neuroblastoma. Which nursing action is most important when performing the physical assessment?',
+    options: [
+      'Palpate the abdomen firmly in all four quadrants to characterize the mass',
+      'Avoid palpating the abdomen and document the finding for the provider',
+      'Apply a heating pad to the abdomen to reduce the child\'s discomfort',
+      'Perform deep percussion over the mass to determine its consistency'
+    ],
+    answer: 1,
+    concept: 'Neuroblastoma — Do Not Palpate',
+    rationale: 'Neuroblastoma abdominal masses must NOT be palpated. Palpation can rupture the tumor capsule and cause metastatic spread of cancer cells. The nurse must document the presence of the mass and notify the provider without manipulating it.',
+    deepExplanation: 'Two layers: know what neuroblastoma is (most common solid tumor in children, usually abdominal) AND know the critical safety rule — never palpate. This applies to Wilms\' tumor as well. Any unexplained abdominal mass in a child should not be palpated until a diagnosis is established.',
+    others: {
+      0: 'Firm palpation of a neuroblastoma or Wilms\' tumor can rupture the capsule and cause metastatic seeding — this is a critical safety violation.',
+      2: 'Heat application to an undiagnosed abdominal mass is not appropriate and could worsen inflammation or mask symptoms.',
+      3: 'Deep percussion over an abdominal mass carries the same risk as palpation — manipulation could cause rupture and spread.'
+    }
+  },
+  // 11 — Medulloblastoma S/S
+  {
+    topic: 'Medulloblastoma',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A 7-year-old is brought to the clinic with a 3-week history of morning headaches, repeated vomiting, and increasing difficulty with balance while walking. The nurse should anticipate that these symptoms are most consistent with which condition?',
+    options: [
+      'Viral meningitis from a recent infection',
+      'Migraine headaches with vestibular involvement',
+      'Medulloblastoma causing increased intracranial pressure',
+      'Iron deficiency anemia causing neurological symptoms'
+    ],
+    answer: 2,
+    concept: 'Medulloblastoma — S/S Recognition',
+    rationale: 'Medulloblastoma is a cerebellar tumor occurring most commonly in children aged 5–10. Classic triad: increased ICP (morning headaches, vomiting), ataxia (balance problems), and unsteady gait. The cerebellar location explains the coordination and balance deficits.',
+    deepExplanation: 'Two layers: recognize the classic medulloblastoma presentation AND connect it to the cerebellar location. Morning headaches and vomiting from ICP, combined with cerebellar ataxia, in a school-age child is medulloblastoma until proven otherwise. The morning timing is classic — ICP is highest after lying flat overnight.',
+    others: {
+      0: 'Viral meningitis presents acutely with fever, nuchal rigidity, and photophobia — not a 3-week progressive course with balance issues.',
+      1: 'Migraines can cause vomiting and headaches but progressive ataxia over weeks is not a migraine pattern.',
+      3: 'Iron deficiency anemia causes fatigue, pallor, and tachycardia — not cerebellar ataxia or ICP symptoms.'
+    }
+  },
+  // 12 — Medulloblastoma family coping
+  {
+    topic: 'Medulloblastoma — Family Coping',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The parents of a child diagnosed with advanced medulloblastoma ask the nurse what treatment options are available. Which response by the nurse is most therapeutic?',
+    options: [
+      '"This is a very serious diagnosis and there is nothing more we can do at this point."',
+      '"Treatment options include surgical removal, radiation, chemotherapy, and bone marrow transplant for advanced disease — and we will support your family throughout."',
+      '"You should focus on the positive — many children survive this completely."',
+      '"The oncologist will handle all of that — my role is just to monitor vitals and give medications."'
+    ],
+    answer: 1,
+    concept: 'Medulloblastoma — Family Education & Support',
+    rationale: 'Therapeutic family coping involves honest education about treatment options (surgery, radiation, chemo, BMT for advanced disease), emotional support, and involving the family in care decisions. The nurse\'s role includes being present for these conversations and supporting the family — not deflecting.',
+    deepExplanation: 'Two layers: know the treatment options for medulloblastoma AND apply therapeutic communication with a family in crisis. Dismissing hope or the nurse\'s role is non-therapeutic. False reassurance ("many children survive completely") is also inappropriate. Honest, compassionate information with a support offer is the correct approach.',
+    others: {
+      0: 'This response eliminates hope and is therapeutically inappropriate — treatment options exist even for advanced disease.',
+      2: 'False reassurance minimizes the family\'s legitimate fear and is not therapeutic — honest information with support is the appropriate approach.',
+      3: 'Deflecting the family\'s question to only the oncologist abandons the nurse\'s responsibility as a therapeutic communicator and patient advocate.'
+    }
+  },
+  // 13 — ALL vs AML
+  {
+    topic: 'Pediatric Leukemia',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is educating a nursing student about pediatric leukemias. Which statement correctly distinguishes ALL from AML?',
+    options: [
+      'ALL primarily affects adolescents while AML is most common in toddlers',
+      'ALL is the most common childhood cancer occurring in ages 2–10; AML occurs mostly in adolescents and has 8 subtypes used to guide treatment',
+      'Both types present identically and are distinguished only by bone marrow biopsy',
+      'AML is always curable while ALL requires lifelong chemotherapy'
+    ],
+    answer: 1,
+    concept: 'ALL vs AML — Differentiation',
+    rationale: 'ALL (Acute Lymphoblastic Leukemia) is the most common childhood cancer, peaking at ages 2–10. AML (Acute Myelocytic Leukemia) occurs mostly in adolescents and has 8 subtypes (M0–M7) used to determine treatment approach.',
+    deepExplanation: 'Two layers: know both leukemia types AND be able to contrast them. ALL = most common + young children. AML = adolescents + 8 subtypes (M0–M7). The subtype classification in AML is specifically in your notes as a testable detail — the subtypes determine chemotherapy regimen.',
+    others: {
+      0: 'This reverses the age groups — ALL peaks at 2–10 years, AML occurs mostly in adolescents.',
+      2: 'While bone marrow biopsy confirms diagnosis, ALL and AML have distinct clinical presentations and epidemiology.',
+      3: 'Neither statement is accurate — AML is not always curable and ALL does not require lifelong chemotherapy.'
+    }
+  },
+  // 14 — Neutropenic wrong teaching
+  {
+    topic: 'Neutropenic Precautions',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A nurse has completed education with a family whose child is starting chemotherapy. Which statement by the parent requires the nurse to follow up?',
+    options: [
+      '"We\'ll make sure to wash our hands thoroughly every time we enter the room."',
+      '"We brought fresh flowers from the garden to cheer up the room."',
+      '"We know to call right away if our child develops a fever."',
+      '"We won\'t bring anyone who has been sick recently to visit."'
+    ],
+    answer: 1,
+    concept: 'Neutropenic Precautions — Wrong Teaching',
+    rationale: 'Fresh flowers and plants are strictly prohibited in neutropenic patients because they harbor bacteria and fungal spores that can cause life-threatening infections in an immunocompromised child. The parent must be educated immediately to remove the flowers.',
+    deepExplanation: 'This is a wrong teaching question — you\'re looking for the unsafe statement. The parent bringing flowers demonstrates a fundamental misunderstanding of neutropenic precautions. The other three statements all reflect correct understanding. Fresh flowers = immediate safety concern = follow up now.',
+    others: {
+      0: 'Thorough handwashing is correct — standard infection control is especially critical in neutropenic patients.',
+      2: 'Calling immediately for fever is correct — fever is the primary infection indicator in neutropenic patients.',
+      3: 'Excluding sick visitors is correct — limiting infection exposure is a core neutropenic precaution.'
+    }
+  },
+  // 15 — Sickle cell interventions SATA
+  {
+    topic: 'Sickle Cell Crisis — Interventions',
+    confirmed: false,
+    type: 'sata',
+    stem: 'A child with sickle cell disease is admitted in vaso-occlusive crisis. Which nursing interventions should the nurse implement?',
+    options: [
+      'Encourage rest to decrease oxygen consumption',
+      'Administer oxygen regardless of pulse oximetry reading',
+      'Initiate IV hydration aggressively to reduce blood viscosity',
+      'Monitor strict intake and output',
+      'Prepare to administer blood products if ordered',
+      'Place on contact precautions to prevent spread of infection'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'Sickle Cell Crisis — Nursing Interventions',
+    rationale: 'Sickle cell crisis interventions: rest (decreases O2 demand), aggressive IV hydration (reduces sickling), strict I&O (monitors fluid balance), and blood products if ordered. Oxygen is given only if hypoxia is present — not automatically. Contact precautions are not indicated — sickle cell is not contagious.',
+    perOptionExplanations: {
+      0: '<strong>Rest</strong> — decreases oxygen consumption, reducing the demand that drives further sickling.',
+      2: '<strong>Aggressive IV hydration</strong> — dilutes blood, reduces viscosity, and improves microvascular flow. Confirmed priority intervention.',
+      3: '<strong>Strict I&O</strong> — monitors fluid balance during aggressive hydration and ensures adequate output.',
+      4: '<strong>Blood products if ordered</strong> — PRBCs may be needed for severe anemia or acute chest syndrome.'
+    },
+    others: {
+      1: 'Oxygen is given only if hypoxia is documented — routine oxygen without indication is not standard practice.',
+      5: 'Contact precautions are for infectious/contagious conditions — sickle cell vaso-occlusive crisis is not contagious.'
+    }
+  },
+  // 16 — ITP vs hemophilia comparison
+  {
+    topic: 'Bleeding Disorders — Differential',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is comparing two children with bleeding disorders. Child A has prolonged aPTT, normal platelets, and reports pain and swelling in the knee after a minor fall. Child B has normal aPTT, low platelets, and has pinpoint non-blanching spots appearing after a viral illness. Which pairing correctly identifies both children?',
+    options: [
+      'Child A has ITP; Child B has hemophilia',
+      'Both children have the same condition — only the severity differs',
+      'Child A has hemophilia with hemarthrosis; Child B has ITP with petechiae',
+      'Child A has iron deficiency anemia; Child B has leukemia'
+    ],
+    answer: 2,
+    concept: 'Hemophilia vs ITP — Differential',
+    rationale: 'Child A: prolonged aPTT + normal platelets + hemarthrosis (bleeding into joint) = hemophilia. Child B: normal aPTT + low platelets + petechiae post-viral = ITP. The aPTT and platelet count are the key lab differentiators between these two bleeding disorders.',
+    deepExplanation: 'Two layers: know both conditions AND use the lab values to differentiate them. Hemophilia = clotting factor deficiency = prolonged aPTT = deep tissue/joint bleeding. ITP = platelet destruction = low platelets = surface bleeding (petechiae, purpura). Different mechanisms, different presentations, different labs.',
+    others: {
+      0: 'This is reversed — the prolonged aPTT with hemarthrosis is hemophilia, not ITP.',
+      1: 'These are entirely different conditions with different pathophysiology, labs, and clinical presentations.',
+      3: 'Neither presentation matches iron deficiency anemia or leukemia — the lab values and presentations clearly indicate bleeding disorders.'
+    }
+  },
+  // 17 — Incorporating children in care
+  {
+    topic: 'Pediatric Oncology — Child-Centered Care',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for an 8-year-old undergoing chemotherapy. The child is refusing to take oral medications and is asking "why do I have to take all this medicine?" Which response by the nurse demonstrates the most appropriate approach?',
+    options: [
+      'Tell the parents to enforce medication compliance without involving the child in the explanation',
+      'Use age-appropriate language to explain that the medicine fights the cancer cells, and offer the child a choice between juice or water to take it with',
+      'Remind the child that they have no choice and must take the medication as ordered',
+      'Defer the medication until the child is more cooperative and document the refusal'
+    ],
+    answer: 1,
+    concept: 'Child-Centered Care — Incorporating Children',
+    rationale: 'Incorporating children in their care: use age-appropriate explanations, allow choices where possible (control), include them in decisions, and use play/therapeutic communication. Giving the child a choice between juice or water restores a sense of control. Age-appropriate explanation addresses the "why" question directly.',
+    deepExplanation: 'Two layers: know the principles of child-centered care AND apply them to a specific scenario. Children need to feel some control during a frightening illness. Explaining in age-appropriate terms + offering a small choice = acknowledging the child as a participant. Forcing compliance or deferring medication both fail the child therapeutically.',
+    others: {
+      0: 'Excluding the child from the explanation and using parents as enforcers is authoritarian — not child-centered care.',
+      2: 'Telling an 8-year-old they have no choice eliminates all sense of control and increases anxiety and non-compliance.',
+      3: 'Deferring a scheduled chemotherapy medication without a provider order could compromise treatment efficacy.'
+    }
+  },
+  // 18 — Iron deficiency anemia S/S
+  {
+    topic: 'Iron Deficiency Anemia — S/S',
+    confirmed: false,
+    type: 'sata',
+    stem: 'The nurse is assessing a child with suspected iron deficiency anemia. Which findings are consistent with this diagnosis?',
+    options: [
+      'Pallor and fatigue',
+      'Pica — craving and eating non-food substances like ice or dirt',
+      'Hemarthrosis and prolonged bleeding after minor cuts',
+      'Tachycardia',
+      'Brittle, spoon-shaped nails',
+      'Petechiae and purpura on the lower extremities'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Iron Deficiency Anemia — Clinical Findings',
+    rationale: 'Iron deficiency anemia: pallor (decreased Hgb), fatigue, pica (craving non-food items — ice and dirt are classic), tachycardia (compensatory increase in heart rate to maintain oxygen delivery), and spoon-shaped nails (koilonychia from chronic deficiency). Hemarthrosis = hemophilia. Petechiae/purpura = ITP.',
+    perOptionExplanations: {
+      0: '<strong>Pallor and fatigue</strong> — decreased hemoglobin reduces oxygen delivery to tissues.',
+      1: '<strong>Pica</strong> — craving ice (pagophagia) or dirt is a classic sign of iron deficiency; the mechanism is not fully understood.',
+      3: '<strong>Tachycardia</strong> — the heart compensates for poor oxygen delivery by beating faster.',
+      4: '<strong>Spoon-shaped nails (koilonychia)</strong> — chronic iron deficiency causes nails to become brittle and concave.'
+    },
+    others: {
+      2: 'Hemarthrosis and prolonged bleeding are signs of hemophilia — a clotting factor disorder, not iron deficiency anemia.',
+      5: 'Petechiae and purpura are signs of thrombocytopenia (ITP) — not iron deficiency anemia.'
+    }
+  },
+  // 19 — Sickle cell education wrong teaching
+  {
+    topic: 'Sickle Cell — Patient Education',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse has completed discharge education with the family of a child with sickle cell disease. Which statement by the parent requires the nurse to follow up?',
+    options: [
+      '"We will make sure our child drinks plenty of fluids every day."',
+      '"We will keep our child warm and dressed appropriately in cold weather."',
+      '"Swimming in cold water at the community pool is a great low-impact activity for our child."',
+      '"We will call the doctor right away if our child gets a fever or has chest pain."'
+    ],
+    answer: 2,
+    concept: 'Sickle Cell — Trigger Avoidance Teaching',
+    rationale: 'Cold temperatures are a known trigger for sickle cell crisis — cold causes vasoconstriction and promotes sickling. Swimming in cold water exposes the child to both cold temperature and potential physical exertion, making this a high-risk activity. The parent must be educated that cold water swimming should be avoided.',
+    deepExplanation: 'This is a wrong teaching question — you\'re looking for the dangerous statement. Hydration is correct. Warmth is correct. Calling for fever/chest pain is correct. Cold water swimming combines two triggers: cold temperature (vasoconstriction → sickling) and exertion (increased O2 demand). This requires immediate follow-up.',
+    others: {
+      0: 'Adequate daily hydration is correct — it prevents blood thickening and reduces sickling risk.',
+      1: 'Keeping warm is correct — cold is a known trigger for vaso-occlusive crisis.',
+      3: 'Calling for fever or chest pain is correct — these are signs of infection and Acute Chest Syndrome respectively.'
+    }
+  },
+  // 20 — Heme/Onco priority triage
+  {
+    topic: 'Heme/Onco — Priority Triage',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is rounding on four pediatric hematology patients. Which patient requires the most immediate assessment?',
+    options: [
+      'A child with ALL whose morning labs show a WBC of 0.8 and is afebrile',
+      'A child with iron deficiency anemia whose oral iron supplement is due in 30 minutes',
+      'A child with ITP whose platelet count dropped from 45,000 to 18,000 overnight',
+      'A child with sickle cell disease who developed sudden severe headache and right-sided arm weakness'
+    ],
+    answer: 3,
+    concept: 'Heme/Onco — Emergency Recognition',
+    rationale: 'Sudden severe headache and unilateral weakness in a sickle cell patient is a stroke — sickling in cerebral blood vessels causes ischemic stroke. This is the most immediately life-threatening presentation. Immediate assessment and activation of stroke protocol is required.',
+    deepExplanation: 'Two layers: identify stroke in a sickle cell patient AND prioritize it above all others. Sickle cell children are at high risk for stroke from cerebral vaso-occlusion. Sudden severe headache + focal neurological deficit = stroke = emergent. A critically low WBC in ALL is concerning but the afebrile status makes it less immediately emergent. Dropping platelets in ITP need assessment but no acute neurological symptoms.',
+    others: {
+      0: 'A critically low WBC without fever in ALL is concerning and requires close monitoring, but is less immediately emergent than an acute stroke.',
+      1: 'A scheduled iron supplement is a routine task — not an urgent assessment.',
+      2: 'A dropping platelet count in ITP from 45,000 to 18,000 warrants urgent attention, but a sickle cell stroke with focal neurological deficits is the higher priority emergency.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+  if (q.confirmed) {
+    const banner = el('div', 'confirmed-banner');
+    banner.innerHTML = `<span class="confirmed-dot"></span>Confirmed Test Item — recalled from actual exam`;
+    card.appendChild(banner);
+  }
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      const confirmedTag = m.q.confirmed ? `<span class="missed-item-confirmed">🎯 confirmed test item</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <div><span class="missed-item-concept">${m.q.concept}</span>${confirmedTag}</div>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown"><div class="breakdown-title">Topic Breakdown</div>${breakdownHTML}</div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

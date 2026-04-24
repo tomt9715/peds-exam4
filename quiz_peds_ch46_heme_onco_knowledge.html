@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 46 — Heme/Onco Knowledge Check</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c; --teal: #0d9488; --teal-soft: #14b8a6;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --bg: #fafaf7;
+  --card: #ffffff; --line: #e5e0d5; --line-strong: #d4cdbd;
+  --correct: #059669; --correct-bg: #ecfdf5; --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+.sticky-header { position: sticky; top: 0; z-index: 100; background: var(--navy); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+.q-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06); animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.q-meta { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55; color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif; }
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+.opt-indicator { min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s; }
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn { padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.16s; }
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+.rationale-wrap { margin: 0 28px 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both; }
+.rationale-wrap.show { display: block; }
+.rat-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px; }
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn { width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card { background: var(--navy); border-radius: 20px; padding: 40px 32px; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+.results-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.retry-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 46 — Heme/Onco · Knowledge Check</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 18</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+<div class="main">
+  <div id="quiz-screen"><div class="q-card" id="q-card"></div></div>
+  <div id="results-screen"></div>
+</div>
+<script>
+const questions = [
+  // 1
+  {
+    topic: 'Neutropenic Precautions',
+    type: 'sata',
+    stem: 'A child receiving chemotherapy is placed on neutropenic precautions. Which actions by the nurse are correct?',
+    options: [
+      'Place the child in reverse isolation',
+      'Allow fresh flowers brought by family to brighten the room',
+      'Avoid rectal temperatures and rectal medications',
+      'Monitor closely for fever as an early sign of infection',
+      'Ensure no live vaccines are given during this period',
+      'Encourage visitors to come in groups to support the child'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'Neutropenic Precautions',
+    rationale: 'Neutropenic precautions: reverse isolation, no rectal temps or meds, monitor fever as infection indicator, and no live vaccines. Fresh flowers harbor bacteria and fungal spores — strictly prohibited. Visitors are limited and screened, not encouraged in groups.',
+    perOptionExplanations: {
+      0: '<strong>Reverse isolation</strong> — protects the immunocompromised child FROM environmental organisms.',
+      2: '<strong>No rectal temps or meds</strong> — rectal mucosa is fragile; rectal procedures create infection entry points.',
+      3: '<strong>Monitor fever</strong> — any temperature elevation is treated as infection until proven otherwise.',
+      4: '<strong>No live vaccines</strong> — the child cannot mount an immune response and may develop infection from attenuated organisms.'
+    },
+    others: {
+      1: 'Fresh flowers and plants are strictly prohibited — they harbor bacteria and fungal spores dangerous to neutropenic patients.',
+      5: 'Visitors are limited and screened for illness — group visitation increases infection exposure risk.'
+    }
+  },
+  // 2
+  {
+    topic: 'Blood Transfusion Reaction',
+    type: 'standard',
+    stem: 'A child receiving a blood transfusion develops fever and chills 15 minutes into the infusion. What is the nurse\'s first action?',
+    options: [
+      'Slow the infusion rate and notify the provider',
+      'Stop the infusion immediately',
+      'Administer diphenhydramine and continue at a slower rate',
+      'Obtain a STAT CBC before taking any other action'
+    ],
+    answer: 1,
+    concept: 'Transfusion Reaction — Stop First',
+    rationale: 'The first action in any suspected transfusion reaction is to STOP the infusion immediately. Then maintain IV access with normal saline, notify the provider, send the blood bag to the blood bank, and monitor vitals. Never slow — stop completely.',
+    deepExplanation: 'Fever and chills during a transfusion indicate a possible hemolytic or febrile non-hemolytic reaction. Continuing to infuse incompatible blood — even at a slower rate — worsens the reaction. The stop-first rule applies to all transfusion reactions regardless of perceived severity.',
+    others: {
+      0: 'Slowing the rate continues exposing the child to potentially incompatible blood — the infusion must be stopped completely.',
+      2: 'Diphenhydramine and continuing is the approach for mild allergic reactions only — fever and chills require stopping first.',
+      3: 'Obtaining labs without stopping the infusion delays the most critical intervention — stop first, then draw labs.'
+    }
+  },
+  // 3
+  {
+    topic: 'Sickle Cell Crisis — Interventions',
+    type: 'standard',
+    stem: 'A child with sickle cell disease is admitted in vaso-occlusive crisis with severe leg pain. Which nursing intervention is the priority?',
+    options: [
+      'Administer supplemental oxygen at 2L/min via nasal cannula',
+      'Initiate IV hydration aggressively',
+      'Place on contact precautions and restrict activity',
+      'Obtain blood cultures and start IV antibiotics'
+    ],
+    answer: 1,
+    concept: 'Sickle Cell Crisis — Hydration Priority',
+    rationale: 'Aggressive IV hydration is the priority intervention in vaso-occlusive sickle cell crisis. It dilutes the blood, reduces viscosity, and improves flow through occluded vessels. Oxygen is given only if hypoxia is present — not automatically.',
+    deepExplanation: 'Hydration directly treats the pathophysiology of vaso-occlusive crisis — dehydration promotes sickling. Oxygen is reserved for documented hypoxia. Contact precautions are not indicated for sickle cell disease. Antibiotics address infection, not the crisis itself.',
+    others: {
+      0: 'Oxygen is administered only if hypoxia is documented — automatic oxygen without indication is not the priority.',
+      2: 'Contact precautions are for infectious/contagious conditions — sickle cell crisis is not contagious.',
+      3: 'Antibiotics treat infection — not the primary intervention for vaso-occlusive crisis without signs of infection.'
+    }
+  },
+  // 4
+  {
+    topic: 'Sickle Cell — Triggers',
+    type: 'standard',
+    stem: 'The nurse is educating the family of a child with sickle cell disease about preventing crises. Which factor is identified as a common trigger for vaso-occlusive episodes?',
+    options: [
+      'High-fat diet and excessive sleep',
+      'Infection, dehydration, and cold temperatures',
+      'Mild exercise and warm weather',
+      'Caffeine intake and sun exposure'
+    ],
+    answer: 1,
+    concept: 'Sickle Cell — Crisis Triggers',
+    rationale: 'Common sickle cell crisis triggers: infection (confirmed test answer), dehydration, hypoxia, cold temperatures, stress, and high altitude. Infection is one of the most dangerous triggers because it promotes inflammatory sickling.',
+    deepExplanation: 'Families must know all major triggers to prevent crises. Cold causes vasoconstriction and promotes sickling. Dehydration concentrates the blood. Infection triggers an inflammatory state. Hypoxia is particularly dangerous. Prophylactic penicillin in early childhood and vaccination address the infection risk specifically.',
+    others: {
+      0: 'High-fat diet and excessive sleep are not sickle cell crisis triggers.',
+      2: 'Mild exercise in warm weather is generally safe — these are not typical triggers.',
+      3: 'Caffeine and sun exposure are not documented sickle cell crisis triggers.'
+    }
+  },
+  // 5
+  {
+    topic: 'Hemophilia — Labs',
+    type: 'standard',
+    stem: 'The nurse is reviewing lab results for a child suspected of having hemophilia. Which laboratory finding is most consistent with this diagnosis?',
+    options: [
+      'Decreased platelet count with normal aPTT',
+      'Prolonged aPTT with normal platelet count and normal PT',
+      'Decreased hemoglobin with elevated TIBC',
+      'Prolonged PT with normal aPTT'
+    ],
+    answer: 1,
+    concept: 'Hemophilia — Lab Findings',
+    rationale: 'Hemophilia is a clotting factor deficiency in the intrinsic pathway → prolonged aPTT. PT and platelet count are both normal because the extrinsic pathway and platelet function are intact.',
+    deepExplanation: 'aPTT tests the intrinsic pathway (factors VIII and IX — the ones deficient in hemophilia). PT tests the extrinsic pathway — unaffected in hemophilia. Platelets are normal because hemophilia is a clotting factor problem, not a platelet problem. Decreased Hgb + elevated TIBC = iron deficiency anemia.',
+    others: {
+      0: 'Decreased platelet count describes thrombocytopenia or ITP — not hemophilia.',
+      2: 'Decreased Hgb and elevated TIBC describe iron deficiency anemia — not hemophilia.',
+      3: 'Prolonged PT indicates extrinsic pathway problems (warfarin toxicity, liver disease) — hemophilia affects the intrinsic pathway (aPTT).'
+    }
+  },
+  // 6
+  {
+    topic: 'Hemophilia — S/S',
+    type: 'standard',
+    stem: 'A child with hemophilia is brought to the clinic after a minor fall. Which finding is most characteristic of hemophilia specifically?',
+    options: [
+      'Petechiae scattered across the torso',
+      'Honey-colored crusting at the wound site',
+      'Hemarthrosis with painful swollen joints',
+      'Purpura that appeared spontaneously without trauma'
+    ],
+    answer: 2,
+    concept: 'Hemophilia — Hemarthrosis',
+    rationale: 'Hemarthrosis (bleeding into joints) is a hallmark clinical finding of hemophilia. The joints become painful, swollen, and warm. It occurs because the clotting factors needed to stop bleeding after minor trauma are absent.',
+    deepExplanation: 'Hemophilia causes deep tissue and joint bleeding — hemarthrosis, muscle hematomas, and prolonged bleeding after minor cuts. Petechiae and spontaneous purpura are signs of thrombocytopenia (ITP). Honey-colored crusting is impetigo. The joint bleeding distinguishes hemophilia from platelet disorders.',
+    others: {
+      0: 'Petechiae indicate low platelets (thrombocytopenia/ITP) — not hemophilia. Hemophilia has normal platelets.',
+      1: 'Honey-colored crusting is impetigo — a bacterial skin infection unrelated to hemophilia.',
+      3: 'Spontaneous purpura without trauma indicates thrombocytopenia — hemophilia requires trauma or injury to manifest bleeding.'
+    }
+  },
+  // 7
+  {
+    topic: 'ITP — Recognition',
+    type: 'standard',
+    stem: 'A 4-year-old is brought to the clinic 10 days after recovering from a viral illness. The parent reports sudden bruising and pinpoint red dots all over the child\'s body. The dots do not turn white when pressed. The nurse recognizes this as which condition?',
+    options: [
+      'Hemophilia following a viral trigger',
+      'Immune Thrombocytopenic Purpura',
+      'Leukemia presenting with skin involvement',
+      'Impetigo spreading from a localized infection'
+    ],
+    answer: 1,
+    concept: 'ITP — Recognition',
+    rationale: 'ITP is an immune-mediated platelet destruction following viral illness. Non-blanching petechiae (pinpoint dots that do not turn white with pressure) and purpura develop from thrombocytopenia. The post-viral onset in a young child is the classic presentation.',
+    deepExplanation: 'Non-blanching = blood outside the vessels cannot be pushed away by pressure. Blanching = blood is inside capillaries and pressure empties them temporarily. Post-viral + non-blanching petechiae in a toddler = ITP until proven otherwise. ITP is the immune response that destroys platelets after the body generates antibodies against the viral infection.',
+    others: {
+      0: 'Hemophilia causes deep tissue and joint bleeding — not petechiae. And hemophilia is a genetic condition, not triggered by viral illness.',
+      2: 'Leukemia can cause similar findings but has additional systemic symptoms (fatigue, fever, lymphadenopathy) — ITP is the most likely explanation for isolated post-viral petechiae.',
+      3: 'Impetigo causes localized honey-colored crusting — not widespread non-blanching petechiae.'
+    }
+  },
+  // 8
+  {
+    topic: 'Iron Deficiency Anemia — S/S',
+    type: 'sata',
+    stem: 'The nurse is assessing a child with suspected iron deficiency anemia. Which findings are consistent with this diagnosis?',
+    options: [
+      'Fatigue and pallor',
+      'Pica — craving and eating ice or dirt',
+      'Hemarthrosis and joint swelling',
+      'Tachycardia',
+      'Brittle spoon-shaped nails',
+      'Non-blanching petechiae on the trunk'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Iron Deficiency Anemia — S/S',
+    rationale: 'Iron deficiency anemia: fatigue and pallor (low Hgb reduces O2 delivery), pica (craving non-food items like ice/dirt), tachycardia (compensatory heart rate increase), and spoon-shaped brittle nails (koilonychia from chronic deficiency). Hemarthrosis = hemophilia. Petechiae = ITP.',
+    perOptionExplanations: {
+      0: '<strong>Fatigue and pallor</strong> — decreased hemoglobin reduces oxygen delivery to tissues.',
+      1: '<strong>Pica</strong> — craving and eating non-food substances (ice = pagophagia, dirt = geophagia) is a classic iron deficiency sign.',
+      3: '<strong>Tachycardia</strong> — the heart beats faster to compensate for reduced oxygen-carrying capacity.',
+      4: '<strong>Spoon-shaped nails (koilonychia)</strong> — brittle, concave nails from chronic iron deficiency.'
+    },
+    others: {
+      2: 'Hemarthrosis and joint swelling are signs of hemophilia — not iron deficiency anemia.',
+      5: 'Non-blanching petechiae indicate thrombocytopenia (ITP) — not iron deficiency anemia.'
+    }
+  },
+  // 9
+  {
+    topic: 'Iron Deficiency Anemia — Treatment',
+    type: 'standard',
+    stem: 'A child is prescribed oral iron supplements for iron deficiency anemia. Which instruction maximizes absorption?',
+    options: [
+      'Give iron with a glass of milk to reduce stomach upset',
+      'Give iron with orange juice between meals',
+      'Give iron with a high-fiber meal to slow absorption',
+      'Give iron at bedtime with a calcium-rich snack'
+    ],
+    answer: 1,
+    concept: 'Iron Supplementation — Absorption',
+    rationale: 'Oral iron is best absorbed on an empty stomach or between meals. Vitamin C (ascorbic acid) in orange juice enhances iron absorption by converting ferric to ferrous iron. Milk, calcium, and high-fiber foods all inhibit iron absorption.',
+    deepExplanation: 'The three enhancers/inhibitors to know: Vitamin C = enhances absorption. Calcium (milk, dairy) = inhibits. Fiber = inhibits. The empty stomach/between meals timing maximizes bioavailability. Orange juice as the Vitamin C vehicle is the classic teaching pairing.',
+    others: {
+      0: 'Milk contains calcium which directly competes with and blocks iron absorption.',
+      2: 'High-fiber foods bind iron and significantly reduce absorption — iron should not be taken with fiber.',
+      3: 'Calcium-rich snacks inhibit iron absorption — bedtime with dairy is one of the worst times to take iron supplements.'
+    }
+  },
+  // 10
+  {
+    topic: 'Neuroblastoma',
+    type: 'standard',
+    stem: 'The nurse is admitting a child with a suspected abdominal mass. The diagnosis of neuroblastoma is being considered. Which nursing action is most important during the physical assessment?',
+    options: [
+      'Palpate all four abdominal quadrants firmly to characterize the mass',
+      'Avoid abdominal palpation and document the finding for the provider',
+      'Apply gentle percussion over the mass to assess its size',
+      'Have the child perform a Valsalva maneuver to make the mass more prominent'
+    ],
+    answer: 1,
+    concept: 'Neuroblastoma — Do Not Palpate',
+    rationale: 'Neuroblastoma abdominal masses must NOT be palpated. Palpation can rupture the tumor capsule and seed cancer cells throughout the abdominal cavity (metastatic spread). The nurse documents the finding and notifies the provider without manipulating the mass.',
+    deepExplanation: 'This rule applies to neuroblastoma and Wilms\' tumor — any unexplained abdominal mass in a child. The same rule applies: never palpate until the diagnosis is established. Percussion and Valsalva also risk disturbing the mass.',
+    others: {
+      0: 'Firm palpation of a neuroblastoma can rupture the capsule and cause metastatic seeding — this is a critical safety violation.',
+      2: 'Percussion over an undiagnosed abdominal mass carries the same risk as palpation — avoid manipulating the mass.',
+      3: 'Valsalva increases intra-abdominal pressure and could disrupt a fragile tumor capsule — not appropriate.'
+    }
+  },
+  // 11
+  {
+    topic: 'Medulloblastoma — S/S',
+    type: 'standard',
+    stem: 'A 6-year-old presents with a 3-week history of morning headaches, vomiting on awakening, and difficulty with balance. Which condition does the nurse suspect?',
+    options: [
+      'Iron deficiency anemia causing neurological symptoms',
+      'Viral meningitis from recent illness',
+      'Medulloblastoma causing increased intracranial pressure',
+      'Migraine headaches with nausea'
+    ],
+    answer: 2,
+    concept: 'Medulloblastoma — S/S Recognition',
+    rationale: 'Medulloblastoma is a cerebellar brain tumor most common in children ages 5–10. Classic triad: morning headaches and vomiting (increased ICP — worse after lying flat overnight) and ataxia/balance problems (cerebellar location). The 3-week progressive course distinguishes it from acute illness.',
+    deepExplanation: 'The morning timing is a critical clue — ICP builds overnight when lying flat, so headache and vomiting are worst in the morning. Cerebellar location explains the balance and coordination deficits. Progressive over weeks is the pattern of a growing tumor, not an acute infection.',
+    others: {
+      0: 'Iron deficiency anemia causes fatigue, pallor, and tachycardia — not cerebellar ataxia or ICP symptoms.',
+      1: 'Viral meningitis presents acutely with fever, nuchal rigidity, and photophobia — not a 3-week progressive course with balance issues.',
+      3: 'Migraines cause headache and vomiting but not progressive ataxia over weeks — the balance problems point to a cerebellar lesion.'
+    }
+  },
+  // 12
+  {
+    topic: 'Medulloblastoma — Treatment',
+    type: 'standard',
+    stem: 'A child is diagnosed with medulloblastoma. Which treatment options does the nurse anticipate discussing with the family?',
+    options: [
+      'IV antibiotics and corticosteroids only',
+      'Surgery, radiation, and chemotherapy with BMT for advanced disease',
+      'Observation only — most medulloblastomas resolve spontaneously',
+      'Oral iron supplements and blood transfusions'
+    ],
+    answer: 1,
+    concept: 'Medulloblastoma — Treatment',
+    rationale: 'Medulloblastoma treatment: surgical removal, radiation therapy, chemotherapy, and bone marrow transplant (BMT) for advanced disease. Family coping support, education, and involvement in care decisions are also essential nursing responsibilities.',
+    deepExplanation: 'The four treatment modalities in order: surgery first to debulk/remove the tumor, then radiation and chemotherapy to treat residual disease and prevent spread, and BMT for advanced cases. None of these are curative in isolation — combined therapy is the approach.',
+    others: {
+      0: 'Antibiotics treat infections — medulloblastoma is a solid tumor requiring surgery and oncology treatment.',
+      2: 'Medulloblastoma does not resolve spontaneously — it is a malignant tumor requiring aggressive treatment.',
+      3: 'Iron supplements and transfusions treat anemia — not a brain tumor.'
+    }
+  },
+  // 13
+  {
+    topic: 'Leukemia — ALL vs AML',
+    type: 'standard',
+    stem: 'The nurse is teaching about pediatric leukemias. Which statement about ALL and AML is correct?',
+    options: [
+      'AML is most common in children ages 2–10; ALL occurs mostly in adolescents',
+      'ALL is the most common childhood leukemia, occurring in ages 2–10; AML occurs mostly in adolescents',
+      'Both ALL and AML have identical treatment protocols regardless of subtype',
+      'ALL has 8 subtypes that determine treatment; AML has no subtype classification'
+    ],
+    answer: 1,
+    concept: 'ALL vs AML — Differentiation',
+    rationale: 'ALL (Acute Lymphoblastic Leukemia) is the most common childhood cancer, peaking at ages 2–10. AML (Acute Myelocytic Leukemia) occurs mostly in adolescents and has 8 subtypes (M0–M7) used to guide treatment selection.',
+    deepExplanation: 'Key facts: ALL = most common + ages 2–10. AML = adolescents + 8 subtypes (M0–M7). The subtype classification in AML is specifically tested — it determines the chemotherapy regimen chosen. ALL and AML have different treatment protocols.',
+    others: {
+      0: 'This reverses the conditions — ALL peaks at 2–10, AML in adolescents.',
+      2: 'ALL and AML have different treatment protocols — AML specifically uses subtype classification to determine treatment.',
+      3: 'AML has 8 subtypes (M0–M7); ALL is the one without subtype-guided treatment in these notes.'
+    }
+  },
+  // 14
+  {
+    topic: 'HUS — Triad',
+    type: 'standard',
+    stem: 'A child is admitted after an E. coli gastrointestinal infection. Assessment reveals pallor, bruising, and decreased urine output. Which condition does the nurse suspect based on these findings?',
+    options: [
+      'Immune Thrombocytopenic Purpura',
+      'Hemolytic Uremic Syndrome',
+      'Sickle Cell Disease in vaso-occlusive crisis',
+      'Iron deficiency anemia from GI blood loss'
+    ],
+    answer: 1,
+    concept: 'HUS — Recognition',
+    rationale: 'HUS triad: hemolytic anemia (pallor), thrombocytopenia (bruising/purpura), and AKI (decreased urine output). The E. coli GI infection trigger is the classic history. All three components together following an E. coli infection = HUS.',
+    deepExplanation: 'The E. coli trigger is the key historical detail. E. coli O157:H7 produces Shiga toxin which damages RBCs and renal endothelial cells. Assess for the triad: pallor (anemia), bruising/petechiae (low platelets), and oliguria (kidney injury). Implement bleeding precautions from thrombocytopenia.',
+    others: {
+      0: 'ITP follows viral illness with isolated thrombocytopenia — not the full HUS triad with AKI and hemolytic anemia after E. coli.',
+      2: 'Sickle cell crisis causes pain from vascular occlusion — not pallor + bruising + oliguria after E. coli.',
+      3: 'Iron deficiency anemia causes pallor and fatigue but not thrombocytopenia or AKI.'
+    }
+  },
+  // 15
+  {
+    topic: 'Sickle Cell — Crisis Interventions',
+    type: 'sata',
+    stem: 'A child with sickle cell disease is admitted in vaso-occlusive crisis. Which nursing interventions are appropriate?',
+    options: [
+      'Promote rest to decrease oxygen consumption',
+      'Administer oxygen regardless of pulse oximetry reading',
+      'Initiate aggressive IV hydration',
+      'Monitor strict intake and output',
+      'Place on contact precautions',
+      'Prepare to administer blood products if ordered'
+    ],
+    answerArr: [0, 2, 3, 5],
+    concept: 'Sickle Cell Crisis — Nursing Interventions',
+    rationale: 'Sickle cell crisis: rest (decreases O2 demand), aggressive IV hydration (reduces sickling), strict I&O (monitors fluid balance), and blood products if ordered. Oxygen only if hypoxia is present. Contact precautions are not indicated — sickle cell is not contagious.',
+    perOptionExplanations: {
+      0: '<strong>Rest</strong> — decreases oxygen consumption and reduces the demand driving further sickling.',
+      2: '<strong>Aggressive IV hydration</strong> — reduces blood viscosity and improves microvascular flow.',
+      3: '<strong>Strict I&O</strong> — monitors fluid balance during aggressive hydration.',
+      5: '<strong>Blood products if ordered</strong> — PRBCs may be needed for severe anemia or Acute Chest Syndrome.'
+    },
+    others: {
+      1: 'Oxygen is given only if hypoxia is documented — routine oxygen without indication is not standard.',
+      4: 'Contact precautions are for contagious conditions — sickle cell disease is not infectious.'
+    }
+  },
+  // 16
+  {
+    topic: 'Bleeding Disorders — Comparison',
+    type: 'standard',
+    stem: 'The nurse is comparing hemophilia and ITP. Which statement correctly distinguishes these two bleeding disorders?',
+    options: [
+      'Hemophilia has low platelets; ITP has a prolonged aPTT',
+      'Both conditions cause petechiae and are treated with platelet transfusions',
+      'Hemophilia has a prolonged aPTT with normal platelets; ITP has low platelets with a normal aPTT',
+      'Hemophilia follows viral illness; ITP is a genetic condition'
+    ],
+    answer: 2,
+    concept: 'Hemophilia vs ITP — Lab Differentiation',
+    rationale: 'Hemophilia: prolonged aPTT (intrinsic pathway defect) with normal platelets → deep tissue/joint bleeding. ITP: low platelets (immune destruction) with normal aPTT → surface bleeding (petechiae, purpura). The lab values are the clearest differentiator.',
+    deepExplanation: 'The mechanism drives the lab finding and the clinical presentation. Hemophilia = clotting factor deficiency = aPTT abnormal = deep bleeding. ITP = platelet destruction = platelet count low = surface bleeding. Neither affects the other\'s pathway — so each has one abnormal lab and one normal lab.',
+    others: {
+      0: 'This is reversed — hemophilia has prolonged aPTT (not low platelets), ITP has low platelets (not prolonged aPTT).',
+      1: 'Hemophilia does not cause petechiae and is not treated with platelet transfusions — it is treated with clotting factor replacement.',
+      3: 'Hemophilia is a genetic condition; ITP follows viral illness — this is reversed.'
+    }
+  },
+  // 17
+  {
+    topic: 'Child-Centered Oncology Care',
+    type: 'standard',
+    stem: 'The nurse is caring for a 9-year-old undergoing chemotherapy. When explaining a procedure, which approach best incorporates the child in their own care?',
+    options: [
+      'Explain all details to the parents only to avoid frightening the child',
+      'Use age-appropriate language, allow the child to ask questions, and offer small choices where possible',
+      'Tell the child exactly what will happen using medical terminology to build health literacy',
+      'Avoid all discussion with the child to reduce anxiety about the procedure'
+    ],
+    answer: 1,
+    concept: 'Child-Centered Care — Incorporating Children',
+    rationale: 'Child-centered care: use age-appropriate language, involve the child in the explanation, allow them to ask questions, and offer choices where possible (e.g., which arm for the IV). Giving children some control reduces anxiety and improves cooperation.',
+    deepExplanation: 'Children undergoing chemotherapy experience loss of control — illness, procedures, and hospitalizations are done TO them. Restoring even small choices (which arm, which flavor of medicine, what to watch during the infusion) gives back agency. Age-appropriate language ensures they understand without being overwhelmed.',
+    others: {
+      0: 'Excluding the child from explanations removes their ability to understand and cope with what is happening — not child-centered care.',
+      2: 'Adult medical terminology is not age-appropriate for a 9-year-old — simple honest language is the correct approach.',
+      3: 'Avoiding discussion increases anxiety — children cope better when they know what to expect.'
+    }
+  },
+  // 18
+  {
+    topic: 'Heme/Onco — Summary',
+    type: 'sata',
+    stem: 'The nurse is reviewing care plans for children with hematologic conditions. Which pairings of condition and key nursing priority are correctly matched?',
+    options: [
+      'Sickle cell crisis — aggressive IV hydration as priority intervention',
+      'Hemophilia — bleeding precautions and monitor aPTT',
+      'ITP — implement neutropenic precautions',
+      'Neutropenic patient — no fresh flowers or plants in room',
+      'Blood transfusion reaction — slow the infusion rate first',
+      'HUS — implement bleeding precautions from thrombocytopenia'
+    ],
+    answerArr: [0, 1, 3, 5],
+    concept: 'Heme/Onco — Nursing Priorities',
+    rationale: 'Correct pairings: sickle cell crisis → hydration, hemophilia → bleeding precautions + aPTT monitoring, neutropenic patient → no fresh flowers, HUS → bleeding precautions from thrombocytopenia. ITP does not require neutropenic precautions. Transfusion reaction requires stopping — not slowing — the infusion.',
+    perOptionExplanations: {
+      0: '<strong>Sickle cell crisis → IV hydration</strong> — confirmed priority intervention.',
+      1: '<strong>Hemophilia → bleeding precautions + aPTT</strong> — monitor the relevant lab and protect from bleeding.',
+      3: '<strong>Neutropenic → no fresh flowers</strong> — confirmed test answer; plants harbor dangerous organisms.',
+      5: '<strong>HUS → bleeding precautions</strong> — confirmed test answer; thrombocytopenia puts the child at bleeding risk.'
+    },
+    others: {
+      2: 'ITP does not require neutropenic precautions — neutropenic precautions are for patients with low neutrophil counts from chemotherapy, not platelet destruction.',
+      4: 'A transfusion reaction requires STOPPING the infusion immediately — slowing it continues the exposure to potentially incompatible blood.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <span class="missed-item-concept">${m.q.concept}</span>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown"><div class="breakdown-title">Topic Breakdown</div>${breakdownHTML}</div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 43 — GU Deep Drill</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540;
+  --navy-soft: #1a3a5c;
+  --teal: #0d9488;
+  --teal-soft: #14b8a6;
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --muted: #6b7280;
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --line: #e5e0d5;
+  --line-strong: #d4cdbd;
+  --correct: #059669;
+  --correct-bg: #ecfdf5;
+  --wrong: #dc2626;
+  --wrong-bg: #fef2f2;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+  --confirmed: #7c3aed;
+  --confirmed-bg: #f5f3ff;
+  --confirmed-border: #ddd6fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+.sticky-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+
+.q-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.q-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.confirmed-banner {
+  display: flex; align-items: center; gap: 8px; padding: 9px 24px;
+  background: var(--confirmed-bg); border-bottom: 1px solid var(--confirmed-border);
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--confirmed); font-weight: 500;
+}
+.confirmed-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--confirmed);
+  flex-shrink: 0; box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+}
+
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px;
+  border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg);
+  cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55;
+  color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif;
+}
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+
+.opt-indicator {
+  min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s;
+}
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn {
+  padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.16s;
+}
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+
+.rationale-wrap {
+  margin: 0 28px 28px; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both;
+}
+.rationale-wrap.show { display: block; }
+.rat-header {
+  padding: 14px 18px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal);
+  border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn {
+  width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card {
+  background: var(--navy); border-radius: 20px; padding: 40px 32px;
+  text-align: center; margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.results-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-confirmed { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--confirmed-bg); color: var(--confirmed); border: 1px solid var(--confirmed-border); padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; margin-left: 4px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.retry-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+  border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s;
+}
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 43 — GU · Deep Drill</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 20</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="quiz-screen"><div class="q-card" id="q-card"></div></div>
+  <div id="results-screen"></div>
+</div>
+
+<script>
+const questions = [
+  // 1 — Nephrotic syndrome confirmed triad
+  {
+    topic: 'Nephrotic Syndrome',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is assessing a child admitted with Nephrotic Syndrome. The preceptor asks the new nurse to identify the three hallmark laboratory findings expected in this condition. Which response demonstrates correct understanding?',
+    options: [
+      'Hematuria, hypertension, and elevated BUN',
+      'Proteinuria, hypoalbuminemia, and hyperlipidemia',
+      'Elevated creatinine, metabolic acidosis, and oliguria',
+      'Thrombocytopenia, hemolytic anemia, and azotemia'
+    ],
+    answer: 1,
+    concept: 'Nephrotic Syndrome — Triad',
+    rationale: 'The hallmark triad of Nephrotic Syndrome: massive proteinuria (protein leaking through damaged glomeruli), hypoalbuminemia (low albumin from protein loss), and hyperlipidemia (liver compensates by producing more lipids). Massive edema results from the low oncotic pressure.',
+    deepExplanation: 'Two layers: know the triad AND understand the mechanism. Protein leaks out → albumin drops → fluid shifts out of vessels into tissue → edema. Liver overproduces lipids trying to compensate → hyperlipidemia. Hematuria + HTN = Glomerulonephritis. HUS triad = hemolytic anemia + thrombocytopenia + AKI.',
+    others: {
+      0: 'Hematuria and hypertension are hallmarks of Acute Glomerulonephritis, not Nephrotic Syndrome.',
+      2: 'Elevated creatinine, metabolic acidosis, and oliguria describe Acute Kidney Injury.',
+      3: 'Thrombocytopenia, hemolytic anemia, and azotemia describe the triad of Hemolytic Uremic Syndrome.'
+    }
+  },
+  // 2 — Nephrotic syndrome edema management
+  {
+    topic: 'Nephrotic Syndrome',
+    confirmed: false,
+    type: 'standard',
+    stem: 'When providing education to the family of a child with Nephrotic Syndrome, which dietary instruction should the nurse include?',
+    options: [
+      'Increase sodium intake to help retain fluid in the bloodstream',
+      'Encourage a high-potassium diet and restrict fluid intake severely',
+      'Restrict salt intake and encourage high-potassium foods',
+      'Provide a high-fiber, low-protein diet to reduce kidney workload'
+    ],
+    answer: 2,
+    concept: 'Nephrotic Syndrome — Diet',
+    rationale: 'Nephrotic Syndrome management: restrict salt (reduces fluid retention and edema) and encourage high-potassium foods (diuretics used in treatment cause potassium loss). This is the opposite of Glomerulonephritis, which restricts both sodium AND potassium.',
+    deepExplanation: 'The sodium/potassium distinction between Nephrotic Syndrome and AGN is a high-yield comparison. Nephrotic: restrict salt, encourage potassium. AGN: restrict salt AND restrict potassium. Knowing which condition restricts potassium is the two-layer test here.',
+    others: {
+      0: 'Increasing sodium worsens fluid retention and edema — the opposite of the goal.',
+      1: 'High-potassium diet is correct, but severe fluid restriction is not standard for Nephrotic Syndrome management.',
+      3: 'High-fiber, low-protein is used for chronic kidney disease — not Nephrotic Syndrome, which already has significant protein loss.'
+    }
+  },
+  // 3 — AGN confirmed
+  {
+    topic: 'Acute Glomerulonephritis',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is admitted with Acute Glomerulonephritis following a recent strep infection. When providing education to the family about dietary restrictions, which statement by the nurse is most accurate?',
+    options: [
+      '"Your child should eat high-sodium foods to replace what is being lost in the urine."',
+      '"We need to restrict sodium and fluids, and also limit foods high in potassium."',
+      '"Your child needs extra potassium since the kidneys are losing it through the urine."',
+      '"No dietary restrictions are needed — medications will manage all the symptoms."'
+    ],
+    answer: 1,
+    concept: 'AGN — Dietary Restrictions',
+    rationale: 'AGN management requires low-sodium diet (reduces fluid retention and hypertension), fluid restriction, and restriction of high-potassium foods (kidneys cannot excrete potassium effectively when inflamed). This is confirmed as a test answer.',
+    deepExplanation: 'This is the key contrast with Nephrotic Syndrome: AGN restricts BOTH sodium AND potassium. In AGN, the inflamed kidneys cannot excrete potassium properly, so it accumulates → hyperkalemia risk. In Nephrotic Syndrome, diuretics cause potassium loss, so potassium is encouraged.',
+    others: {
+      0: 'High-sodium intake worsens hypertension and fluid retention in AGN — the opposite of the goal.',
+      2: 'Potassium must be restricted in AGN because the kidneys cannot excrete it effectively — not replaced.',
+      3: 'Dietary restrictions are a critical part of AGN management alongside medications.'
+    }
+  },
+  // 4 — UTI education
+  {
+    topic: 'UTI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is discharging a 4-year-old girl after treatment for her second UTI this year. Which statement by the parent indicates the discharge teaching was effective?',
+    options: [
+      '"We\'ll make sure she wipes from back to front to avoid irritating the urethra."',
+      '"We\'ll switch her to nylon underwear since it\'s more durable than cotton."',
+      '"We\'ll let her take bubble baths since she enjoys them and they keep her clean."',
+      '"We\'ll make sure she wipes front to back, wears cotton underwear, and avoids bubble baths."'
+    ],
+    answer: 3,
+    concept: 'UTI — Prevention Teaching',
+    rationale: 'UTI prevention in girls: wipe front to back (prevents fecal bacteria from entering the urethra), wear cotton underwear (breathable, reduces moisture), and avoid bubble baths (irritate the urethra and disrupt normal flora). All three elements together indicate effective teaching.',
+    deepExplanation: 'Two layers: know the three prevention strategies AND recognize when a parent has them all correct. Back-to-front wiping is the most dangerous mistake — it directly introduces rectal bacteria to the urethra. Nylon traps moisture. Bubble baths are a classic UTI trigger.',
+    others: {
+      0: 'Back-to-front wiping introduces fecal bacteria directly toward the urethra — this is the primary UTI risk behavior to avoid.',
+      1: 'Nylon underwear traps moisture and heat, promoting bacterial growth — cotton is the correct recommendation.',
+      2: 'Bubble baths irritate the urethra and disrupt protective flora — they increase UTI risk and should be avoided.'
+    }
+  },
+  // 5 — VUR neurogenic bladder confirmed
+  {
+    topic: 'Vesicoureteral Reflux',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is diagnosed with a neurogenic bladder following spinal cord involvement from myelomeningocele. The nurse understands that this condition places the child at highest risk for which complication?',
+    options: [
+      'Nephrotic Syndrome from protein loss',
+      'Vesicoureteral Reflux leading to recurrent UTIs and renal scarring',
+      'Acute Glomerulonephritis from strep infection',
+      'Hemolytic Uremic Syndrome from E. coli'
+    ],
+    answer: 1,
+    concept: 'Neurogenic Bladder — VUR',
+    rationale: 'A neurogenic bladder causes incomplete emptying and high bladder pressures, which can force urine backward into the ureters and kidneys — this is Vesicoureteral Reflux. VUR leads to recurrent UTIs and renal scarring, which can eventually cause hypertension and chronic kidney disease.',
+    deepExplanation: 'Two layers: know what a neurogenic bladder is (poor bladder control from nerve damage) AND know its primary complication (VUR). This was confirmed as a test answer — neurogenic bladder → VUR. The connection is: incomplete emptying → stasis → retrograde flow → kidney damage.',
+    others: {
+      0: 'Nephrotic Syndrome results from glomerular permeability changes — not neurogenic bladder.',
+      2: 'AGN follows Group A Strep infection — not neurogenic bladder.',
+      3: 'HUS follows GI infection with E. coli — not neurogenic bladder.'
+    }
+  },
+  // 6 — Urinary diversion SATA confirmed
+  {
+    topic: 'Post-op GU Care',
+    confirmed: true,
+    type: 'sata',
+    stem: 'A child has undergone a urinary diversion procedure. Which nursing interventions should the nurse implement in the first 24–48 hours post-operatively?',
+    options: [
+      'Maintain IV fluids at 1.5 times the maintenance rate to encourage high urinary output',
+      'Restrict oral fluids to prevent stress on the surgical site',
+      'Monitor urine output via Foley catheter or stent',
+      'Maintain strict intake and output measurements',
+      'Ambulate the child immediately to prevent atelectasis',
+      'Monitor Foley catheter and stents for patency'
+    ],
+    answerArr: [0, 2, 3, 5],
+    concept: 'Urinary Diversion — Post-op Care',
+    rationale: 'Post-op urinary diversion: IV fluids at 1.5× maintenance rate encourages high urinary output to flush the system, strict I&O tracks fluid balance, monitor Foley and stents for patency and output. Restricting fluids would be dangerous. Immediate ambulation is not the priority in the first 24–48 hours post-op.',
+    perOptionExplanations: {
+      0: '<strong>IV fluids at 1.5× maintenance</strong> — encourages high urinary output to prevent clot formation and flush the surgical site. Confirmed test answer.',
+      2: '<strong>Monitor urine output via Foley/stent</strong> — ensures the diversion is functioning and output is adequate.',
+      3: '<strong>Strict I&O</strong> — essential to track fluid balance and catch early signs of obstruction or inadequate output. Confirmed test answer.',
+      5: '<strong>Monitor Foley and stents for patency</strong> — kinks or blockages can cause backup and damage the repair.'
+    },
+    others: {
+      1: 'Fluid restriction is contraindicated — high fluid intake and urinary output is the goal post-operatively.',
+      4: 'Immediate ambulation in the first 24–48 hours is not a priority post-op nursing intervention for urinary diversion.'
+    }
+  },
+  // 7 — Testicular torsion confirmed
+  {
+    topic: 'Testicular Torsion',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 14-year-old male presents to the ED reporting sudden, severe scrotal pain that started one hour ago while playing basketball. On assessment the nurse notes the scrotum is swollen and appears dark bluish-black. Which action by the nurse is most appropriate?',
+    options: [
+      'Apply ice to the scrotum and administer oral analgesics while awaiting ultrasound results',
+      'Reassure the patient that scrotal swelling after exercise is common and will resolve',
+      'Notify the provider immediately — this presentation is consistent with testicular torsion requiring urgent surgery',
+      'Obtain a urine culture to rule out epididymitis before escalating care'
+    ],
+    answer: 2,
+    concept: 'Testicular Torsion — Emergency Recognition',
+    rationale: 'Sudden severe scrotal pain with a dark blue-black discolored scrotum is testicular torsion until proven otherwise. The spermatic cord has twisted, cutting off blood flow. Surgery must happen within 6 hours to save the testicle — any delay dramatically reduces viability.',
+    deepExplanation: 'Two layers: recognize the presentation (sudden pain + black/blue scrotum) AND know the urgency (6-hour window for surgery). Ice and analgesics delay definitive treatment. Epididymitis is less acute and presents differently. This was confirmed as a test answer.',
+    others: {
+      0: 'Ice and oral analgesics delay the urgent surgical intervention needed — every minute matters in testicular torsion.',
+      1: 'Sudden severe scrotal pain with color change is never attributed to normal exercise — this requires immediate escalation.',
+      3: 'Waiting for a urine culture results in dangerous delay — testicular torsion is a surgical emergency that cannot wait.'
+    }
+  },
+  // 8 — HUS precautions confirmed
+  {
+    topic: 'Hemolytic Uremic Syndrome',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is admitted with Hemolytic Uremic Syndrome following an E. coli gastroenteritis. The nurse anticipates implementing which precaution based on the expected lab findings?',
+    options: [
+      'Neutropenic precautions due to low white blood cell count',
+      'Contact precautions due to active infectious diarrhea',
+      'Bleeding precautions due to thrombocytopenia',
+      'Seizure precautions due to hypernatremia'
+    ],
+    answer: 2,
+    concept: 'HUS — Bleeding Precautions',
+    rationale: 'HUS triad includes thrombocytopenia (low platelets) — this places the child at significant bleeding risk. Bleeding precautions are implemented: avoid injections when possible, use soft-bristle toothbrush, monitor for petechiae, purpura, and bruising.',
+    deepExplanation: 'Two layers: know the HUS triad (hemolytic anemia + thrombocytopenia + AKI) AND apply the clinical implication of low platelets → bleeding precautions. Your friend specifically recalled "bleeding" as her answer for HUS precautions on the test.',
+    others: {
+      0: 'Neutropenic precautions are for immunocompromised patients with low neutrophil counts — HUS causes thrombocytopenia, not neutropenia.',
+      1: 'Contact precautions may have been appropriate during the acute GI infection, but the current priority is the HUS triad — bleeding precautions from thrombocytopenia.',
+      3: 'Seizure precautions are used for neurological conditions or severe electrolyte imbalances — not the primary concern in HUS.'
+    }
+  },
+  // 9 — Nephrotic vs AGN comparison
+  {
+    topic: 'Renal — Differential',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for two children on the same unit. Child A has massive edema, frothy urine, and no hematuria. Child B has cola-colored urine, hypertension, and a recent history of strep throat. The nurse correctly identifies which pairing?',
+    options: [
+      'Child A has Acute Glomerulonephritis; Child B has Nephrotic Syndrome',
+      'Child A has Hemolytic Uremic Syndrome; Child B has Acute Glomerulonephritis',
+      'Child A has Nephrotic Syndrome; Child B has Acute Glomerulonephritis',
+      'Child A has Nephrotic Syndrome; Child B has Hemolytic Uremic Syndrome'
+    ],
+    answer: 2,
+    concept: 'Nephrotic vs AGN — Differential',
+    rationale: 'Child A: massive edema + frothy urine (proteinuria) + no blood = Nephrotic Syndrome. Child B: cola/tea-colored urine (hematuria) + hypertension + post-strep = Acute Glomerulonephritis. These two conditions are the classic renal comparison pair.',
+    deepExplanation: 'Key distinguishing features: Nephrotic = frothy urine (protein), massive edema, NO hematuria, NO hypertension initially. AGN = hematuria (cola/tea colored), hypertension, edema, follows strep infection. Frothy vs cola-colored urine is the fastest visual differentiator.',
+    others: {
+      0: 'This reverses the two conditions — frothy urine without blood = Nephrotic, not AGN.',
+      1: 'HUS presents with the triad of hemolytic anemia, thrombocytopenia, and AKI following E. coli — not the presentation described for Child A.',
+      3: 'Child B\'s post-strep history and hematuria point to AGN, not HUS (which follows E. coli).'
+    }
+  },
+  // 10 — Enuresis management
+  {
+    topic: 'Enuresis',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is counseling the parents of a 7-year-old with nocturnal enuresis. Which approach by the nurse is most therapeutic?',
+    options: [
+      'Advise the parents to restrict fluids completely after 3 PM and wake the child hourly overnight',
+      'Reassure the parents, avoid punishing the child, restrict fluids 2 hours before bed, and use a urine sensor alarm',
+      'Recommend the child wear pull-ups overnight to avoid embarrassment and reduce laundry',
+      'Advise withholding privileges until the child stays dry for one week'
+    ],
+    answer: 1,
+    concept: 'Enuresis — Management',
+    rationale: 'Enuresis management: positive reinforcement (never punishment), restrict fluids 2 hours before bed, avoid caffeine, urinate before bedtime, and consider conditioning therapy like urine sensor alarms. Self-esteem must be protected — shame-based approaches are harmful.',
+    deepExplanation: 'Two layers: know the management strategies AND know what NOT to do. Punishment, withholding privileges, and complete fluid restriction are all contraindicated. The urine sensor alarm (conditioning therapy) is the most evidence-based behavioral intervention. DDAVP and Imipramine are medication options.',
+    others: {
+      0: 'Hourly overnight waking is disruptive and not recommended — 2-hour pre-bed fluid restriction is the standard, not complete afternoon restriction.',
+      2: 'Pull-ups remove the sensory feedback the child needs to develop awareness — they are generally not recommended for older children with enuresis.',
+      3: 'Withholding privileges is a punishment approach that damages self-esteem and is explicitly contraindicated in enuresis management.'
+    }
+  },
+  // 11 — Spina bifida latex confirmed
+  {
+    topic: 'Spina Bifida',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is preparing a child with myelomeningocele for a scheduled surgical procedure. Which action should the nurse prioritize before the procedure begins?',
+    options: [
+      'Confirm that the surgical consent has two witness signatures',
+      'Ensure the environment is latex-free and all latex products are removed',
+      'Administer prophylactic antibiotics 60 minutes before the incision',
+      'Place the child prone on the operating table to protect the surgical site'
+    ],
+    answer: 1,
+    concept: 'Spina Bifida — Latex Allergy Priority',
+    rationale: 'Children with myelomeningocele have a high incidence of latex allergy due to repeated exposure to latex products from early surgeries, catheterizations, and procedures. Before any procedure, ensuring a completely latex-free environment is the priority safety action. Confirmed as a test answer.',
+    deepExplanation: 'Two layers: know that spina bifida patients are high-risk for latex allergy AND know that eliminating latex from the environment is the pre-procedure priority. Latex exposure in a sensitized patient can cause anaphylaxis — a life-threatening reaction. This must be addressed before the procedure begins.',
+    others: {
+      0: 'Consent verification is important but is completed before the day of surgery — not the priority action immediately before the procedure.',
+      2: 'Prophylactic antibiotics timing is important but is not the highest-priority safety action for a myelomeningocele patient going to the OR.',
+      3: 'Prone positioning is the pre-operative position for protecting an intact myelomeningocele sac — in the OR, positioning is directed by the surgical team.'
+    }
+  },
+  // 12 — Spina bifida wrong teaching confirmed
+  {
+    topic: 'Spina Bifida',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse has completed discharge education with a teenager who has spina bifida and a neurogenic bladder. Which statement by the patient requires the nurse to follow up?',
+    options: [
+      '"I drink plenty of fluids throughout the day to keep my urine diluted."',
+      '"I catheterize myself twice a day to manage my bladder."',
+      '"I know to watch for signs of UTI like cloudy urine or a fever."',
+      '"I avoid latex gloves and products because of my allergy risk."'
+    ],
+    answer: 1,
+    concept: 'Spina Bifida — Neurogenic Bladder Wrong Teaching',
+    rationale: 'Catheterizing only twice a day is insufficient for neurogenic bladder management. Clean intermittent catheterization (CIC) for neurogenic bladder typically requires catheterization every 3–4 hours — usually 4–6 times per day — to prevent overdistension, VUR, and recurrent UTIs.',
+    deepExplanation: 'This was specifically recalled from the test — "I catheterize myself twice a day" was the wrong teaching answer. Two layers: know that neurogenic bladder requires CIC AND know the frequency (every 3–4 hours, not just twice daily). Only catheterizing twice a day leaves the bladder overdistended for long periods, dramatically increasing VUR and UTI risk.',
+    others: {
+      0: 'Drinking plenty of fluids is correct — dilute urine reduces bacterial growth and UTI risk.',
+      2: 'Monitoring for UTI signs is correct — patients with neurogenic bladder are at high risk and need to recognize symptoms early.',
+      3: 'Avoiding latex products is correct and critical for spina bifida patients due to high latex allergy risk.'
+    }
+  },
+  // 13 — AKI monitoring
+  {
+    topic: 'Acute Kidney Injury',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child is admitted with Acute Kidney Injury following severe dehydration. The nurse should monitor most closely for which electrolyte imbalance?',
+    options: [
+      'Hyponatremia from excessive water retention',
+      'Hypocalcemia from impaired vitamin D activation',
+      'Hyperkalemia from impaired renal excretion',
+      'Hypernatremia from concentrated urine production'
+    ],
+    answer: 2,
+    concept: 'AKI — Hyperkalemia Monitoring',
+    rationale: 'In AKI, the kidneys lose their ability to excrete potassium. Potassium accumulates in the bloodstream → hyperkalemia. This is the priority electrolyte concern in AKI because hyperkalemia can cause life-threatening cardiac dysrhythmias.',
+    deepExplanation: 'Two layers: know AKI causes impaired excretion AND identify hyperkalemia as the dangerous result. Potassium builds up quickly when kidneys fail. The nurse must monitor for peaked T-waves on ECG, muscle weakness, and avoid potassium-containing IV fluids or foods in AKI.',
+    others: {
+      0: 'Hyponatremia can occur in AKI but hyperkalemia is the priority electrolyte concern due to its cardiac implications.',
+      1: 'Hypocalcemia occurs in chronic kidney disease from impaired vitamin D — not the priority in acute AKI.',
+      3: 'AKI causes oliguria and potassium retention — hypernatremia from concentrated urine is not the primary concern.'
+    }
+  },
+  // 14 — CKI management
+  {
+    topic: 'Chronic Kidney Injury',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is educating the family of a child with Chronic Kidney Injury about dietary management. Which instruction is most important?',
+    options: [
+      'Encourage high-potassium, high-phosphorus foods to support kidney function',
+      'Provide a low-phosphorus, low-potassium diet and prepare the family for possible dialysis',
+      'Restrict protein entirely to reduce kidney workload',
+      'Increase sodium intake to maintain blood pressure'
+    ],
+    answer: 1,
+    concept: 'CKI — Dietary Management',
+    rationale: 'Chronic kidney disease dietary management: low phosphorus (kidneys cannot excrete it, leading to bone disease), low potassium (impaired excretion causes hyperkalemia), and preparation for dialysis or transplant as the disease progresses irreversibly.',
+    deepExplanation: 'Two layers: know the specific dietary restrictions in CKI AND connect them to the pathophysiology. Phosphorus builds up → leaches calcium from bones → renal osteodystrophy. Potassium builds up → cardiac risk. Dialysis prepares both patient and family for a major life transition.',
+    others: {
+      0: 'High-potassium and high-phosphorus foods worsen the accumulation that kidneys can no longer excrete — the opposite of what is needed.',
+      2: 'Protein restriction can be part of CKI management but complete elimination is not recommended — adequate nutrition must be maintained.',
+      3: 'Increased sodium causes fluid retention and hypertension — CKI management typically involves sodium restriction.'
+    }
+  },
+  // 15 — VUR nursing assessment
+  {
+    topic: 'Vesicoureteral Reflux',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for a child with confirmed Vesicoureteral Reflux. Which finding on assessment most concerns the nurse and warrants immediate provider notification?',
+    options: [
+      'Urine output of 1.5 mL/kg/hr',
+      'Blood pressure of 118/76 in a school-age child',
+      'New onset hypertension and flank pain',
+      'Mild dysuria reported after a long car trip'
+    ],
+    answer: 2,
+    concept: 'VUR — Renal Scarring Complication',
+    rationale: 'New onset hypertension in a child with VUR signals renal scarring — a significant complication from repeated urine reflux into the kidneys. Renal scarring causes the kidneys to lose regulatory function, including blood pressure control. This requires immediate provider notification.',
+    deepExplanation: 'Two layers: know that VUR causes renal scarring AND know that hypertension is the key complication to monitor for. BP monitoring is specifically listed in your notes as a nursing assessment priority for VUR. Flank pain accompanying new hypertension escalates the concern further.',
+    others: {
+      0: 'A urine output of 1.5 mL/kg/hr is within the acceptable range — not a concerning finding.',
+      1: 'A BP of 118/76 in a school-age child is within normal range — not a concerning finding.',
+      3: 'Mild dysuria after prolonged sitting is a minor and expected complaint — it does not indicate renal scarring or emergent change.'
+    }
+  },
+  // 16 — Post-op GU I&O
+  {
+    topic: 'Post-op GU Care',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child returns from surgery for a ureteral reimplantation. Four hours post-operatively, the nurse notes no urine output from the Foley catheter. Which action by the nurse is most appropriate?',
+    options: [
+      'Document the finding and reassess at the next scheduled check in 2 hours',
+      'Encourage the child to drink more oral fluids to increase urine production',
+      'Assess the catheter for kinks or obstruction and notify the provider if output remains absent',
+      'Clamp the Foley catheter temporarily to allow the bladder to fill before measuring'
+    ],
+    answer: 2,
+    concept: 'Post-op GU — Absent Urine Output',
+    rationale: 'Absent urine output 4 hours post-GU surgery requires immediate assessment of catheter patency and provider notification. A kinked or obstructed catheter is the first thing to check. Persistent absent output after a GU procedure could indicate surgical complication, obstruction, or AKI.',
+    deepExplanation: 'Post-op GU care priorities: maintain IV fluids at 1.5× maintenance, monitor Foley and stents, strict I&O. No output is never just "documented and reassessed" — it requires action. Clamping is contraindicated post-GU surgery.',
+    others: {
+      0: 'Waiting 2 hours with absent post-op urine output is dangerous — this requires immediate assessment and action.',
+      1: 'Oral fluids are appropriate for a stable patient but do not address the immediate concern of absent output from the surgical site.',
+      3: 'Clamping a Foley post-urinary surgery is contraindicated — it would cause dangerous bladder distension at the surgical site.'
+    }
+  },
+  // 17 — Cryptorchidism
+  {
+    topic: 'Cryptorchidism',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is providing education to the parents of a 4-month-old male infant with an undescended testicle. Which statement by the nurse is most accurate?',
+    options: [
+      '"This is a normal finding and will always resolve on its own by age 2."',
+      '"If the testicle has not descended by 6 months, surgical repositioning will be recommended."',
+      '"Undescended testicles only require treatment if the child develops pain."',
+      '"The condition carries no long-term risks if monitored annually."'
+    ],
+    answer: 1,
+    concept: 'Cryptorchidism — Treatment Timeline',
+    rationale: 'If the testicle has not descended by 6 months of age, orchiopexy (surgical repositioning) is recommended. Early correction is important because an undescended testicle left in the abdominal cavity increases the risk of infertility and testicular cancer.',
+    deepExplanation: 'Two layers: know the 6-month threshold AND know why it matters (infertility and cancer risk). The higher temperature of the abdominal cavity damages sperm-producing cells over time. Waiting until age 2 or waiting for pain are both too late — early surgical correction improves long-term outcomes.',
+    others: {
+      0: 'Not all undescended testicles descend spontaneously — the 6-month threshold exists because waiting longer increases long-term risk.',
+      2: 'Waiting for pain is not the threshold — structural position alone determines the need for correction regardless of symptoms.',
+      3: 'Uncorrected cryptorchidism carries significant risks (infertility and testicular cancer) — annual monitoring alone is insufficient.'
+    }
+  },
+  // 18 — Nephrotic syndrome treatment
+  {
+    topic: 'Nephrotic Syndrome',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is reviewing medication orders for a child with Nephrotic Syndrome. Which medication class does the nurse anticipate as the primary long-term treatment?',
+    options: [
+      'Anticoagulants to prevent thrombus formation',
+      'Corticosteroids to reduce glomerular inflammation',
+      'Antibiotics to treat the underlying infection',
+      'Antihistamines to reduce allergic-mediated edema'
+    ],
+    answer: 1,
+    concept: 'Nephrotic Syndrome — Treatment',
+    rationale: 'Corticosteroids (long-term) are the primary treatment for Nephrotic Syndrome. They reduce glomerular permeability, decreasing protein loss. IV albumin replaces lost protein, and diuretics reduce edema. Immunosuppressive therapy is used for steroid-resistant cases.',
+    deepExplanation: 'Two layers: know the treatment (corticosteroids) AND understand the mechanism (reducing glomerular permeability stops protein leakage). Nephrotic Syndrome is not caused by infection — antibiotics are not the treatment. Anticoagulants may be used because low albumin increases clot risk, but they are not the primary treatment.',
+    others: {
+      0: 'Anticoagulants address the clotting risk from low albumin but are not the primary treatment for Nephrotic Syndrome.',
+      2: 'Nephrotic Syndrome is caused by immune-mediated glomerular damage, not a primary infection — antibiotics are not the treatment.',
+      3: 'Antihistamines treat allergic reactions — not glomerular disease.'
+    }
+  },
+  // 19 — Phimosis vs torsion vs cryptorchidism
+  {
+    topic: 'Male GU Conditions',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is reviewing three male pediatric patients. Patient A cannot retract his foreskin. Patient B has a testicle that has not descended. Patient C arrives with acute severe scrotal pain and a bluish discoloration of the scrotum. Which prioritization is correct?',
+    options: [
+      'See Patient B first — undescended testicle is the most serious acute finding',
+      'See Patient A first — phimosis can progress to urinary obstruction rapidly',
+      'See Patient C first — scrotal pain with discoloration indicates testicular torsion requiring surgery within 6 hours',
+      'All three can be seen in any order — none requires urgent intervention'
+    ],
+    answer: 2,
+    concept: 'Male GU — Priority Triage',
+    rationale: 'Patient C has testicular torsion — a surgical emergency. The 6-hour window for surgery determines whether the testicle can be saved. Patient A has phimosis — managed with steroids or circumcision, not an emergency. Patient B has cryptorchidism — needs surgery by 6 months but is not an acute emergency.',
+    deepExplanation: 'Two layers: know all three conditions AND be able to triage them by urgency. Testicular torsion is the only true emergency here. Phimosis is a chronic condition. Cryptorchidism is a scheduled surgical decision. Blue-black scrotum + sudden pain = act now.',
+    others: {
+      0: 'Cryptorchidism is not an acute emergency — it requires correction by 6 months, not immediate same-day intervention.',
+      1: 'Phimosis is a chronic condition managed electively — it does not require urgent triage over a possible testicular torsion.',
+      3: 'Patient C with testicular torsion absolutely requires immediate urgent intervention — this is a surgical emergency.'
+    }
+  },
+  // 20 — UTI diagnosis
+  {
+    topic: 'UTI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for a 6-month-old infant admitted with fever, irritability, and foul-smelling urine. The provider suspects a UTI. The nurse anticipates which test as the gold standard for confirming the diagnosis?',
+    options: [
+      'Urinalysis showing white blood cells and bacteria',
+      'Urine culture and sensitivity',
+      'CBC showing elevated white blood cell count',
+      'Renal ultrasound showing kidney inflammation'
+    ],
+    answer: 1,
+    concept: 'UTI — Gold Standard Diagnosis',
+    rationale: 'Urine culture and sensitivity is the gold standard for UTI diagnosis. It identifies the specific organism causing the infection and determines which antibiotics will be effective. A urinalysis can suggest infection but cannot confirm it or guide antibiotic selection.',
+    deepExplanation: 'Two layers: know the gold standard test AND know why it\'s superior to urinalysis alone. Urinalysis is a screening tool — it can show WBCs and nitrites suggesting infection, but false positives occur. Culture identifies the exact organism. Sensitivity determines which antibiotic will treat it effectively.',
+    others: {
+      0: 'Urinalysis is a screening tool that suggests infection — it cannot confirm the organism or direct antibiotic therapy.',
+      2: 'Elevated WBCs on CBC indicate systemic infection or inflammation but cannot confirm a UTI specifically.',
+      3: 'Renal ultrasound assesses for structural abnormalities or complications — it does not diagnose UTI.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+
+  if (q.confirmed) {
+    const banner = el('div', 'confirmed-banner');
+    banner.innerHTML = `<span class="confirmed-dot"></span>Confirmed Test Item — recalled from actual exam`;
+    card.appendChild(banner);
+  }
+
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      const confirmedTag = m.q.confirmed ? `<span class="missed-item-confirmed">🎯 confirmed test item</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <div><span class="missed-item-concept">${m.q.concept}</span>${confirmedTag}</div>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown">
+      <div class="breakdown-title">Topic Breakdown</div>
+      ${breakdownHTML}
+    </div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

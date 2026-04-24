@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Exam 4 — Study Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+ --navy: #0a2540;
+ --navy-soft: #1a3a5c;
+ --navy-card: #112236;
+ --teal: #0d9488;
+ --teal-soft: #14b8a6;
+ --teal-pale: #f0fdfa;
+ --gold: #f59e0b;
+ --gold-pale: #fffbeb;
+ --purple: #7c3aed;
+ --purple-pale: #f5f3ff;
+ --ink: #1a1a1a;
+ --ink-soft: #3a3a3a;
+ --muted: #6b7280;
+ --bg: #fafaf7;
+ --card: #ffffff;
+ --line: #e5e0d5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* HERO */
+.hero {
+ background: var(--navy);
+ padding: 48px 24px 40px;
+ text-align: center;
+ position: relative;
+ overflow: hidden;
+}
+.hero::before {
+ content: '';
+ position: absolute;
+ top: -100px; right: -100px;
+ width: 400px; height: 400px;
+ background: radial-gradient(circle, rgba(13,148,136,0.12) 0%, transparent 70%);
+ pointer-events: none;
+}
+.hero::after {
+ content: '';
+ position: absolute;
+ bottom: 0; left: 0; right: 0;
+ height: 3px;
+ background: linear-gradient(90deg, var(--teal), var(--teal-soft), var(--gold));
+}
+.hero-badge {
+ font-family: 'DM Mono', monospace;
+ font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+ color: var(--teal-soft); margin-bottom: 12px;
+}
+.hero h1 {
+ font-family: 'DM Serif Display', serif;
+ font-size: clamp(28px, 6vw, 42px);
+ color: #fff; letter-spacing: -0.02em;
+ margin-bottom: 10px;
+}
+.hero p {
+ font-size: 15px; color: rgba(255,255,255,0.6);
+ max-width: 480px; margin: 0 auto 24px;
+ line-height: 1.6;
+}
+.hero-stats {
+ display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+}
+.hero-stat {
+ text-align: center;
+}
+.hero-stat-num {
+ font-family: 'DM Serif Display', serif; font-style: italic;
+ font-size: 28px; color: var(--teal-soft); line-height: 1;
+}
+.hero-stat-label {
+ font-family: 'DM Mono', monospace; font-size: 10px;
+ letter-spacing: 0.1em; text-transform: uppercase;
+ color: rgba(255,255,255,0.4); margin-top: 2px;
+}
+
+/* HOW TO USE */
+.how-to {
+ background: var(--navy-soft);
+ padding: 20px 24px;
+ border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.how-to-inner {
+ max-width: 900px; margin: 0 auto;
+ display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.how-to-label {
+ font-family: 'DM Mono', monospace; font-size: 10px;
+ letter-spacing: 0.12em; text-transform: uppercase;
+ color: var(--teal-soft); flex-shrink: 0;
+}
+.how-to-steps {
+ display: flex; gap: 8px; flex-wrap: wrap;
+}
+.step-pill {
+ display: flex; align-items: center; gap: 6px;
+ padding: 5px 12px; border-radius: 99px;
+ font-size: 12px; font-weight: 500;
+}
+.step-pill.knowledge {
+ background: rgba(13,148,136,0.2); color: var(--teal-soft);
+ border: 1px solid rgba(13,148,136,0.3);
+}
+.step-pill.deep {
+ background: rgba(124,58,237,0.2); color: #c4b5fd;
+ border: 1px solid rgba(124,58,237,0.3);
+}
+.step-arrow {
+ color: rgba(255,255,255,0.3); font-size: 14px;
+}
+
+/* MAIN */
+.main { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+/* CHAPTER BLOCK */
+.chapter-block { margin-bottom: 36px; }
+
+.chapter-header {
+ display: flex; align-items: center; gap: 12px;
+ margin-bottom: 14px;
+}
+.chapter-emoji { font-size: 20px; flex-shrink: 0; }
+.chapter-title {
+ font-family: 'DM Serif Display', serif;
+ font-size: 19px; color: var(--ink); letter-spacing: -0.01em;
+}
+.chapter-sub {
+ font-family: 'DM Mono', monospace; font-size: 10px;
+ letter-spacing: 0.1em; text-transform: uppercase;
+ color: var(--muted); margin-top: 1px;
+}
+
+.quiz-cards {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 12px;
+}
+
+.quiz-card {
+ display: flex; flex-direction: column;
+ background: var(--card);
+ border: 1px solid var(--line);
+ border-radius: 14px;
+ overflow: hidden;
+ text-decoration: none;
+ transition: all 0.2s ease;
+ box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+}
+.quiz-card:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.quiz-card-top {
+ padding: 16px 18px 14px;
+ flex: 1;
+}
+.quiz-card-type {
+ display: inline-flex; align-items: center; gap: 5px;
+ font-family: 'DM Mono', monospace; font-size: 10px;
+ letter-spacing: 0.1em; text-transform: uppercase;
+ padding: 3px 10px; border-radius: 99px;
+ margin-bottom: 10px; font-weight: 500;
+}
+.quiz-card-type.knowledge {
+ background: var(--teal-pale); color: var(--teal);
+ border: 1px solid #99f6e4;
+}
+.quiz-card-type.deep {
+ background: var(--purple-pale); color: var(--purple);
+ border: 1px solid #ddd6fe;
+}
+.quiz-card-name {
+ font-family: 'DM Serif Display', serif;
+ font-size: 15px; color: var(--ink);
+ line-height: 1.4; margin-bottom: 6px;
+}
+.quiz-card-desc {
+ font-size: 12.5px; color: var(--muted);
+ line-height: 1.5;
+}
+
+.quiz-card-bottom {
+ display: flex; align-items: center; justify-content: space-between;
+ padding: 10px 18px;
+ border-top: 1px solid var(--line);
+ background: #fafaf9;
+}
+.quiz-card-bottom.knowledge { background: var(--teal-pale); border-top-color: #ccfbf1; }
+.quiz-card-bottom.deep { background: var(--purple-pale); border-top-color: #ede9fe; }
+
+.quiz-card-q-count {
+ font-family: 'DM Mono', monospace; font-size: 11px;
+ color: var(--muted);
+}
+.quiz-card-arrow {
+ font-size: 14px;
+ transition: transform 0.2s;
+}
+.quiz-card:hover .quiz-card-arrow { transform: translateX(4px); }
+.quiz-card-bottom.knowledge .quiz-card-arrow { color: var(--teal); }
+.quiz-card-bottom.deep .quiz-card-arrow { color: var(--purple); }
+
+/* CONFIRMED BADGE */
+.confirmed-count {
+ display: inline-flex; align-items: center; gap: 4px;
+ font-family: 'DM Mono', monospace; font-size: 10px;
+ letter-spacing: 0.06em; text-transform: uppercase;
+ background: var(--purple-pale); color: var(--purple);
+ border: 1px solid #ddd6fe;
+ padding: 2px 8px; border-radius: 99px;
+ margin-top: 6px;
+}
+.confirmed-count::before { content: '★ '; font-size: 9px; }
+
+/* DIVIDER */
+.chapter-divider {
+ height: 1px; background: var(--line);
+ margin: 8px 0 36px;
+}
+
+/* FOOTER */
+.footer {
+ background: var(--navy);
+ padding: 28px 24px;
+ text-align: center;
+}
+.footer-title {
+ font-family: 'DM Serif Display', serif; font-style: italic;
+ font-size: 18px; color: #fff; margin-bottom: 6px;
+}
+.footer-sub {
+ font-size: 13px; color: rgba(255,255,255,0.4);
+}
+
+@media (max-width: 560px) {
+ .quiz-cards { grid-template-columns: 1fr; }
+ .hero h1 { font-size: 26px; }
+ .hero-stats { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+ <div class="hero-badge">Pediatric Nursing · Exam 4 Prep</div>
+ <h1>Peds Study Hub</h1>
+ <p>Knowledge Checks + Deep Drills for all 6 chapters. Every confirmed test item included.</p>
+ <div class="hero-stats">
+ <div class="hero-stat">
+ <div class="hero-stat-num">6</div>
+ <div class="hero-stat-label">Chapters</div>
+ </div>
+ <div class="hero-stat">
+ <div class="hero-stat-num">12</div>
+ <div class="hero-stat-label">Quizzes</div>
+ </div>
+ <div class="hero-stat">
+ <div class="hero-stat-num">212</div>
+ <div class="hero-stat-label">Questions</div>
+ </div>
+ <div class="hero-stat">
+ <div class="hero-stat-num">40+</div>
+ <div class="hero-stat-label">Confirmed Items</div>
+ </div>
+ </div>
+</div>
+
+<!-- HOW TO USE -->
+<div class="how-to">
+ <div class="how-to-inner">
+ <span class="how-to-label">How to use</span>
+ <div class="how-to-steps">
+ <span class="step-pill knowledge">① Knowledge Check — learn the material</span>
+ <span class="step-arrow">→</span>
+ <span class="step-pill deep">② Deep Drill — apply it like a real exam</span>
+ </div>
+ </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+ <!-- CH 41 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 41 — Cardiac</div>
+ <div class="chapter-sub">TOF · Kawasaki · IE · Rheumatic Fever · HF · Aortic Stenosis</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch41_cardiac.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">Cardiac — Knowledge Check</div>
+ <div class="quiz-card-desc">Direct recall from the review sheet. Confirm you absorbed the material.</div>
+ <div class="confirmed-count">9 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch41_cardiac_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">Cardiac — Deep Drill</div>
+ <div class="quiz-card-desc">Two-layer NCLEX application. Patient teaching, priority triage, clinical recognition.</div>
+ <div class="confirmed-count">6 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+ <div class="chapter-divider"></div>
+
+ <!-- CH 42 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 42 — GI</div>
+ <div class="chapter-sub">Pyloric Stenosis · Intussusception · GERD · Hirschsprung's · Appendicitis</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch42_gi_knowledge.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">GI — Knowledge Check</div>
+ <div class="quiz-card-desc">GI conditions, diagnostics, medications, and nursing priorities.</div>
+ <div class="confirmed-count">5 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch42_gi_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">GI — Deep Drill</div>
+ <div class="quiz-card-desc">Post-op priorities, parent teaching, wrong teaching stems, triage scenarios.</div>
+ <div class="confirmed-count">4 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+ <div class="chapter-divider"></div>
+
+ <!-- CH 43 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 43 — GU</div>
+ <div class="chapter-sub">UTI · Nephrotic · AGN · HUS · AKI · VUR · Testicular Torsion</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch43_gu_knowledge.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">GU — Knowledge Check</div>
+ <div class="quiz-card-desc">Renal conditions, diagnostics, dietary management, and male GU disorders.</div>
+ <div class="confirmed-count">5 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch43_gu_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">GU — Deep Drill</div>
+ <div class="quiz-card-desc">Two-layer application: wrong teaching, differentials, post-op care, triage.</div>
+ <div class="confirmed-count">8 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+ <div class="chapter-divider"></div>
+
+ <!-- CH 44 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 44 — Musculoskeletal</div>
+ <div class="chapter-sub">Traction · Casting · Compartment Syndrome · Neural Tube Defects · Club Foot</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch44_msk_knowledge.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">MSK — Knowledge Check</div>
+ <div class="quiz-card-desc">Traction rules, 6 P's, cast care, neural tube defects, and immobility complications.</div>
+ <div class="confirmed-count">6 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch44_msk_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">MSK — Deep Drill</div>
+ <div class="quiz-card-desc">Application-level: compartment syndrome recognition, wrong teaching, triage.</div>
+ <div class="confirmed-count">6 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+ <div class="chapter-divider"></div>
+
+ <!-- CH 45 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 45 — Integumentary</div>
+ <div class="chapter-sub">Bacterial · Fungal · Viral · Burns · Eczema · SJS · Acne</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch45_skin_knowledge.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">Skin — Knowledge Check</div>
+ <div class="quiz-card-desc">Skin infections, diagnostics, burn classification, and inflammatory conditions.</div>
+ <div class="confirmed-count">5 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch45_skin_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">Skin — Deep Drill</div>
+ <div class="quiz-card-desc">Differentials, wrong teaching, SJS recognition, triage, medication rationale.</div>
+ <div class="confirmed-count">6 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+ <div class="chapter-divider"></div>
+
+ <!-- CH 46 -->
+ <div class="chapter-block">
+ <div class="chapter-header">
+ 
+ <div>
+ <div class="chapter-title">Chapter 46 — Hematology / Oncology</div>
+ <div class="chapter-sub">Sickle Cell · Hemophilia · ITP · Iron Deficiency · Leukemia · Neutropenic Precautions</div>
+ </div>
+ </div>
+ <div class="quiz-cards">
+ <a class="quiz-card" href="quiz_peds_ch46_heme_onco_knowledge.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type knowledge">① Knowledge Check</span>
+ <div class="quiz-card-name">Heme/Onco — Knowledge Check</div>
+ <div class="quiz-card-desc">Bleeding disorders, oncology conditions, neutropenic precautions, and crisis management.</div>
+ <div class="confirmed-count">8 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom knowledge">
+ <span class="quiz-card-q-count">18 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ <a class="quiz-card" href="quiz_peds_ch46_heme_onco_deepdrill.html">
+ <div class="quiz-card-top">
+ <span class="quiz-card-type deep">② Deep Drill</span>
+ <div class="quiz-card-name">Heme/Onco — Deep Drill</div>
+ <div class="quiz-card-desc">Wrong teaching, priority triage, acute chest syndrome, sickle cell triggers.</div>
+ <div class="confirmed-count">8 confirmed test items</div>
+ </div>
+ <div class="quiz-card-bottom deep">
+ <span class="quiz-card-q-count">20 questions</span>
+ <span class="quiz-card-arrow">→</span>
+ </div>
+ </a>
+ </div>
+ </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+ <div class="footer-title">Peds Exam 4 Study Hub</div>
+ <div class="footer-sub">Chapters 41–46 · Knowledge Checks + Deep Drills · Built for your exam</div>
+</div>
+
+</body>
+</html>

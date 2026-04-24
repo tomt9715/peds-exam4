@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 41 — Cardiac Deep Drill</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540;
+  --navy-soft: #1a3a5c;
+  --teal: #0d9488;
+  --teal-soft: #14b8a6;
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --muted: #6b7280;
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --line: #e5e0d5;
+  --line-strong: #d4cdbd;
+  --correct: #059669;
+  --correct-bg: #ecfdf5;
+  --wrong: #dc2626;
+  --wrong-bg: #fef2f2;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+  --confirmed: #7c3aed;
+  --confirmed-bg: #f5f3ff;
+  --confirmed-border: #ddd6fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+.sticky-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+
+.q-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.q-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.confirmed-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 24px;
+  background: var(--confirmed-bg);
+  border-bottom: 1px solid var(--confirmed-border);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--confirmed); font-weight: 500;
+}
+.confirmed-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--confirmed); flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.2);
+}
+
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 13px 16px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--bg);
+  cursor: pointer; transition: all 0.16s ease;
+  font-size: 14px; line-height: 1.55; color: var(--ink-soft);
+  text-align: left; width: 100%; font-family: 'Outfit', sans-serif;
+}
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+
+.opt-indicator {
+  min-width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s;
+}
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn {
+  padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.16s;
+}
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+
+.rationale-wrap {
+  margin: 0 28px 28px; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both;
+}
+.rationale-wrap.show { display: block; }
+
+.rat-header {
+  padding: 14px 18px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+
+.rat-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em;
+}
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4;
+  padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn {
+  width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card {
+  background: var(--navy); border-radius: 20px; padding: 40px 32px;
+  text-align: center; margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.results-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b);
+}
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-confirmed { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--confirmed-bg); color: var(--confirmed); border: 1px solid var(--confirmed-border); padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; margin-left: 4px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.retry-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+  border: none; border-radius: 12px; color: #fff;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+}
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 41 — Cardiac · Deep Drill</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 20</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="quiz-screen">
+    <div class="q-card" id="q-card"></div>
+  </div>
+  <div id="results-screen"></div>
+</div>
+
+<script>
+const questions = [
+  // 1 — TOF Tet spell confirmed
+  {
+    topic: 'Tetralogy of Fallot',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A nurse is caring for a toddler with Tetralogy of Fallot. During a diaper change, the child begins crying intensely and the nurse notices deepening cyanosis and oxygen saturation dropping to 68%. Which action by the nurse would be most appropriate?',
+    options: [
+      'Place the child supine, apply 100% O2 via non-rebreather, and call a rapid response',
+      'Flex the child\'s hips and knees toward the chest and apply supplemental oxygen',
+      'Reposition the child upright in a high-back chair and obtain a STAT ECG',
+      'Administer a normal saline bolus and prepare for emergent cardioversion'
+    ],
+    answer: 1,
+    concept: 'TOF — Tet Spell Intervention',
+    rationale: 'Knee-to-chest (hip and knee flexion) is the priority intervention for a hypercyanotic Tet spell. It increases systemic vascular resistance, reduces right-to-left shunting, and forces more blood through the pulmonary circulation. Supplemental oxygen supports oxygenation concurrently.',
+    deepExplanation: 'Two layers: recognize this as a Tet spell (crying + cyanosis in a TOF child) AND know that the physical positioning intervention comes first. Supine positioning does not increase SVR. A saline bolus and cardioversion address hemodynamic and rhythm problems — neither applies here.',
+    others: {
+      0: 'Supine positioning does not increase systemic vascular resistance — it will not relieve the Tet spell.',
+      2: 'Upright positioning in a chair does not achieve the hip and knee flexion that increases SVR. An ECG is not the priority.',
+      3: 'A saline bolus addresses volume depletion; cardioversion treats dysrhythmias — neither is the intervention for a Tet spell.'
+    }
+  },
+  // 2 — Morphine TOF confirmed
+  {
+    topic: 'TOF — Morphine',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A nurse administers IV morphine to a 6-month-old having a hypercyanotic episode. The preceptor asks the new nurse to identify which finding confirms the medication achieved its therapeutic goal.',
+    options: [
+      'The infant\'s oxygen saturation rises to 99% and the heart rate normalizes to 120 bpm',
+      'The infant becomes calm, stops crying, and oxygen saturation improves to 88%',
+      'The infant falls asleep with a respiratory rate of 12 and blood pressure drops slightly',
+      'The infant\'s skin color becomes fully pink and the murmur is no longer audible'
+    ],
+    answer: 1,
+    concept: 'TOF — Morphine Therapeutic Effect',
+    rationale: 'Therapeutic effect of morphine in a Tet spell: the infant becomes calm, agitation resolves, and oxygen saturation improves — 88% is an acceptable target for a child with a cyanotic heart defect. Full correction to 99% is not expected or realistic in TOF.',
+    deepExplanation: 'Two layers: know what morphine does in a Tet spell (reduces infundibular spasm and agitation) AND know what "working" looks like. Full pink color and 99% sat would be abnormal for a TOF child who has baseline cyanosis. A respiratory rate of 12 in an infant suggests respiratory depression — an adverse effect, not therapeutic.',
+    others: {
+      0: 'A saturation of 99% would be overcorrection — these infants have baseline cyanosis and 88% is the realistic therapeutic target.',
+      2: 'A respiratory rate of 12 in an infant is dangerously low — this indicates respiratory depression, an adverse effect of morphine.',
+      3: 'Full pink color is not a realistic expectation in TOF — the structural defect causes baseline desaturation. A disappearing murmur would not be an expected morphine effect.'
+    }
+  },
+  // 3 — Left vs right shunt application
+  {
+    topic: 'Shunt Classification',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for two infants. Infant A has a VSD and is showing signs of pulmonary congestion and difficulty feeding. Infant B has Tetralogy of Fallot and is deeply cyanotic at rest. The nurse correctly understands that the difference in their presentations is explained by which concept?',
+    options: [
+      'Both defects cause right-to-left shunting but differ in severity',
+      'VSD causes increased pulmonary blood flow from a left-to-right shunt; TOF causes decreased pulmonary blood flow from a right-to-left shunt',
+      'TOF causes increased pulmonary blood flow which overwhelms the lungs, causing cyanosis',
+      'VSD causes decreased pulmonary blood flow, explaining the feeding difficulties and pulmonary symptoms'
+    ],
+    answer: 1,
+    concept: 'Shunt Direction — Clinical Application',
+    rationale: 'VSD = left-to-right shunt → too much blood to lungs → pulmonary congestion, heart failure, feeding difficulty. TOF = right-to-left shunt → blood bypasses lungs → decreased pulmonary blood flow → cyanosis. Opposite presentations from opposite shunt directions.',
+    deepExplanation: 'This question forces you to apply the shunt framework to real clinical presentations simultaneously. VSD floods the lungs (left-to-right) causing wet, congested symptoms. TOF starves the lungs of blood (right-to-left) causing cyanosis. Understanding why each baby looks different is the two-layer test.',
+    others: {
+      0: 'VSD causes a LEFT-to-right shunt, not right-to-left. They are opposite defect types.',
+      2: 'TOF causes DECREASED pulmonary blood flow — the blood bypasses the lungs, it does not overwhelm them.',
+      3: 'VSD causes INCREASED pulmonary blood flow — flooding the lungs explains the congestion and feeding difficulty.'
+    }
+  },
+  // 4 — CHF failure to thrive confirmed
+  {
+    topic: 'Congestive Heart Failure',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is conducting a well-child visit for a 3-month-old with a known Patent Ductus Arteriosus. The parent reports the infant sweats during feeds, tires before finishing bottles, and has gained only 200 grams in the past month. The nurse should monitor this infant most closely for which condition?',
+    options: [
+      'Failure to thrive from congestive heart failure',
+      'Pyloric stenosis causing inadequate caloric intake',
+      'Hypothyroidism causing decreased metabolic activity',
+      'Gastroesophageal reflux causing feeding aversion'
+    ],
+    answer: 0,
+    concept: 'CHF — Failure to Thrive',
+    rationale: 'Sweating with feeds, early fatigue during feeding, and poor weight gain in an infant with a left-to-right shunt defect (PDA) are classic signs of congestive heart failure. Feeding is the equivalent of exercise for these infants — they tire before completing feeds and cannot meet caloric needs.',
+    deepExplanation: 'Two layers: recognize these symptoms as CHF manifestations AND connect them to the PDA diagnosis. PDA causes left-to-right shunting → pulmonary overcirculation → increased work of breathing → feeding takes enormous effort. Inability to gain weight was confirmed as a test answer for CHF.',
+    others: {
+      1: 'Pyloric stenosis presents with forceful projectile vomiting in a 2–8 week old male infant — not feeding fatigue with a known cardiac defect.',
+      2: 'Hypothyroidism causes poor feeding and weight gain but is not connected to the presence of a PDA.',
+      3: 'GERD causes spitting up and back arching — not diaphoresis with feeds in the context of a known cardiac defect.'
+    }
+  },
+  // 5 — Kawasaki management confirmed
+  {
+    topic: 'Kawasaki Disease',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is providing education to the parents of a child newly diagnosed with Kawasaki disease. Which statement by the nurse is most accurate regarding the medication regimen?',
+    options: [
+      '"Your child will take a low dose of aspirin throughout the entire illness to protect the blood vessels."',
+      '"IVIG is given to treat the fever, and aspirin is only added if the fever does not respond."',
+      '"Your child will start on a high dose of aspirin, and once the fever resolves we will reduce it to a much lower daily dose."',
+      '"Aspirin is not typically used in children, so we will manage this with ibuprofen and IVIG."'
+    ],
+    answer: 2,
+    concept: 'Kawasaki — Aspirin Dosing Education',
+    rationale: 'Kawasaki treatment: high-dose aspirin (80–100 mg/kg/day) during the febrile phase for anti-inflammatory effect, then transition to low-dose (3–5 mg/kg/day) once afebrile for antiplatelet protection of the coronary arteries. IVIG is given concurrently.',
+    deepExplanation: 'Two layers: know the two-phase aspirin dosing AND be able to explain it in parent-friendly terms. The purpose shifts from anti-inflammatory to antiplatelet after fever breaks — this is why the dose drops significantly. Ibuprofen does not replace aspirin in Kawasaki management.',
+    others: {
+      0: 'Low-dose aspirin is only used AFTER the fever resolves — high-dose is required during the acute febrile phase.',
+      1: 'IVIG reduces vascular inflammation and coronary aneurysm risk — it is not only for fever. Aspirin is given from the start, not as a second step.',
+      3: 'Aspirin is specifically indicated in Kawasaki disease despite general pediatric cautions. Ibuprofen does not replace it.'
+    }
+  },
+  // 6 — Kawasaki coronary monitoring
+  {
+    topic: 'Kawasaki Disease',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child with Kawasaki disease has been afebrile for 3 days and the family asks if they are "done" with treatment and follow-up. Which response by the nurse is most appropriate?',
+    options: [
+      '"Yes, once the fever resolves the acute phase is over and no further cardiac monitoring is needed."',
+      '"Your child will need ongoing monitoring of the coronary arteries since Kawasaki is the leading cause of acquired heart disease in children."',
+      '"Your child only needs a repeat echocardiogram if symptoms return — otherwise follow-up is optional."',
+      '"The IVIG has prevented all cardiac complications, so routine follow-up is no longer necessary."'
+    ],
+    answer: 1,
+    concept: 'Kawasaki — Long-Term Coronary Monitoring',
+    rationale: 'Kawasaki disease is the leading cause of acquired heart disease in children. Coronary artery aneurysms can develop even after the fever resolves, requiring long-term echocardiographic monitoring. Being afebrile does not mean the risk is gone.',
+    deepExplanation: 'The family\'s misconception that "afebrile = done" is a critical teaching moment. Coronary artery inflammation can persist and lead to aneurysms weeks after the acute illness. IVIG reduces but does not eliminate this risk. Follow-up echocardiograms are essential, not optional.',
+    others: {
+      0: 'Resolution of fever does not end the risk — coronary artery aneurysms can develop in the weeks following the acute phase.',
+      2: 'Follow-up echocardiograms are not optional — they are a required part of Kawasaki management regardless of whether symptoms return.',
+      3: 'IVIG reduces the risk of coronary complications but does not eliminate it — ongoing monitoring is still required.'
+    }
+  },
+  // 7 — IE emboli confirmed
+  {
+    topic: 'Infective Endocarditis',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is caring for a child admitted with Infective Endocarditis. When reviewing the plan of care, the nurse should monitor most closely for which complication?',
+    options: [
+      'Hyperkalemia from antibiotic nephrotoxicity',
+      'Coronary artery aneurysm formation',
+      'Embolic events from infected valve vegetations',
+      'Respiratory alkalosis from increased work of breathing'
+    ],
+    answer: 2,
+    concept: 'IE — Emboli Monitoring',
+    rationale: 'Infective Endocarditis causes vegetations (infected clots) to form on heart valves. These vegetations can break off and travel as emboli to the brain, kidneys, lungs, or other organs. Monitoring for embolic events is a priority nursing assessment — confirmed as a test answer.',
+    deepExplanation: 'Two layers: know that IE involves valve vegetations AND understand that the danger is not just the valve damage but the embolic potential. Signs of emboli: neurological changes (stroke), hematuria (renal embolism), or sudden pain in an extremity.',
+    others: {
+      0: 'Hyperkalemia from antibiotic nephrotoxicity is a concern with aminoglycosides but is not the primary IE complication to monitor for.',
+      1: 'Coronary artery aneurysms are the primary complication of Kawasaki disease, not IE.',
+      3: 'Respiratory alkalosis is not a primary complication of IE — embolic events are the critical concern.'
+    }
+  },
+  // 8 — IE prophylactic ABX confirmed
+  {
+    topic: 'Infective Endocarditis',
+    confirmed: false,
+    type: 'standard',
+    stem: 'When providing education to the family of a child with a repaired congenital heart defect, which statement by the parent indicates the teaching about Infective Endocarditis prevention was effective?',
+    options: [
+      '"We\'ll make sure our child brushes teeth twice a day and that\'s enough to prevent it."',
+      '"Our child needs antibiotics before any dental work or surgical procedures to prevent infection of the heart valves."',
+      '"Since the defect was repaired, our child no longer needs any special precautions."',
+      '"We\'ll watch for fever and bring our child in if it lasts more than 24 hours."'
+    ],
+    answer: 1,
+    concept: 'IE — Prophylactic Antibiotic Teaching',
+    rationale: 'Children with congenital heart defects (even repaired ones) require prophylactic antibiotics before dental and surgical procedures to prevent bacterial seeding of the heart valves. Oral bacteria can enter the bloodstream during these procedures and cause IE.',
+    deepExplanation: 'Good oral hygiene is important but insufficient alone — prophylactic ABX is the specific intervention before procedures. Even a fully repaired defect may carry residual risk depending on the type of repair, so families must maintain this awareness long-term.',
+    others: {
+      0: 'Brushing teeth supports oral health but does not eliminate bacteremia risk during dental procedures — prophylactic antibiotics are still required.',
+      2: 'Repaired defects may still carry risk depending on the type of repair — families should not assume no precautions are needed without confirming with the cardiologist.',
+      3: 'Monitoring for fever is appropriate surveillance but does not prevent IE — prophylactic antibiotics before procedures is the preventive action.'
+    }
+  },
+  // 9 — Rheumatic fever ASO titer confirmed
+  {
+    topic: 'Rheumatic Fever',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 9-year-old presents with joint pain, fever, and a new heart murmur two weeks after an untreated sore throat. The provider suspects rheumatic fever. Which laboratory finding would most support this diagnosis?',
+    options: [
+      'Elevated white blood cell count and positive blood culture',
+      'Prolonged aPTT and decreased platelet count',
+      'Elevated Anti-Streptolysin O titer',
+      'Elevated IgE and positive patch test'
+    ],
+    answer: 2,
+    concept: 'Rheumatic Fever — ASO Titer',
+    rationale: 'An elevated Anti-Streptolysin O (ASO) titer confirms recent Group A Streptococcal infection as the trigger for rheumatic fever. By the time rheumatic fever develops, the active strep infection may have resolved — the ASO titer captures the immune evidence of the prior infection.',
+    deepExplanation: 'Two layers: know what ASO titer tests (antibodies against streptolysin O from Group A Strep) AND know that the throat culture might be negative at this point. The immune response has already been triggered — the titer persists after the infection clears. Confirmed as a specific test question.',
+    others: {
+      0: 'A positive blood culture indicates active bacteremia — by the time rheumatic fever develops, the strep infection may have cleared.',
+      1: 'Prolonged aPTT and low platelets suggest a bleeding disorder (hemophilia or ITP) — not rheumatic fever.',
+      3: 'Elevated IgE and positive patch testing indicate allergic conditions like eczema or contact dermatitis — not rheumatic fever.'
+    }
+  },
+  // 10 — Rheumatic fever mitral valve
+  {
+    topic: 'Rheumatic Fever',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is educating the family of a child recently diagnosed with Rheumatic Heart Disease. Which explanation accurately describes the cardiac damage that can result from rheumatic fever?',
+    options: [
+      'The coronary arteries become inflamed and form aneurysms that can rupture',
+      'The pericardium thickens, restricting normal heart filling and output',
+      'Immune-mediated inflammation permanently damages the heart valves, most often the mitral valve',
+      'Calcium deposits form on the right ventricular wall, leading to arrhythmias'
+    ],
+    answer: 2,
+    concept: 'Rheumatic Heart Disease — Valve Damage',
+    rationale: 'Rheumatic fever triggers an autoimmune response following Group A Strep infection. The immune system attacks the heart valves — most commonly the mitral valve — causing permanent scarring and damage. This is called Rheumatic Heart Disease.',
+    deepExplanation: 'Two layers: know the mechanism (autoimmune cross-reactivity) AND know which valve is most affected (mitral). The immune system produces antibodies against strep that mistakenly attack cardiac tissue. Coronary aneurysms = Kawasaki. Pericardial thickening = constrictive pericarditis. These are different conditions.',
+    others: {
+      0: 'Coronary artery aneurysms are the primary cardiac complication of Kawasaki disease, not rheumatic fever.',
+      1: 'Pericardial thickening causing constrictive pericarditis is a separate condition — rheumatic fever primarily damages the valves.',
+      3: 'Calcium deposits on the right ventricular wall is not the mechanism of rheumatic heart disease.'
+    }
+  },
+  // 11 — Right-sided HF priority assessment
+  {
+    topic: 'Right-Sided Heart Failure',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse receives a shift report on a child with right-sided heart failure. Which assessment should the nurse prioritize performing first at the start of the shift?',
+    options: [
+      'Auscultate lung fields for crackles and assess oxygen saturation',
+      'Weigh the child and compare to the previous day\'s weight',
+      'Assess pupillary response and level of consciousness',
+      'Obtain a 12-lead ECG and review for dysrhythmias'
+    ],
+    answer: 1,
+    concept: 'Right-Sided HF — Priority Assessment',
+    rationale: 'Daily weight is the most sensitive indicator of fluid retention in heart failure. Even a 0.5 kg gain overnight signals significant fluid accumulation requiring intervention. This is the first priority assessment for any heart failure patient at the start of a shift.',
+    deepExplanation: 'Two layers: know the priority assessments for right-sided HF (daily weights + I&O) AND apply that to a shift-change scenario. Lung crackles indicate left-sided failure — right-sided backs up into the body, not the lungs. ECG and neuro checks are not the priority here.',
+    others: {
+      0: 'Pulmonary crackles and hypoxia are left-sided heart failure findings — right-sided HF causes systemic congestion, not pulmonary edema.',
+      2: 'Pupillary response and LOC are neurological assessments — not the priority in a cardiac patient with fluid overload.',
+      3: 'A 12-lead ECG is not the priority first assessment for a stable right-sided HF patient at the start of a shift.'
+    }
+  },
+  // 12 — Right-sided HF wrong teaching
+  {
+    topic: 'Right-Sided Heart Failure',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A nurse is discharging a child with right-sided heart failure. Which statement by the parent requires the nurse to follow up?',
+    options: [
+      '"We will weigh our child every morning before breakfast."',
+      '"We will call the doctor if the weight goes up more than expected overnight."',
+      '"Since the swelling in the legs went down, we can cut back on the daily weight checks."',
+      '"We will keep track of how much our child drinks and urinates each day."'
+    ],
+    answer: 2,
+    concept: 'Right-Sided HF — Discharge Teaching',
+    rationale: 'Reduced edema does not mean daily weights should stop. Weight monitoring is an ongoing tool to detect fluid reaccumulation early — before edema becomes visible again. The parent must continue daily weights regardless of how the child looks.',
+    deepExplanation: 'This is a "wrong teaching" stem — you\'re looking for the incorrect statement. The misconception is that improvement in symptoms means the monitoring can stop. Daily weights catch fluid retention before it becomes clinically visible. Once edema is visible, significant fluid has already accumulated.',
+    others: {
+      0: 'Weighing every morning before breakfast is correct — consistent timing ensures accurate comparison.',
+      1: 'Calling the provider for unexpected weight gain is correct — this is an early sign of decompensation.',
+      3: 'Tracking fluid intake and urine output is correct — I&O monitoring is part of ongoing heart failure management.'
+    }
+  },
+  // 13 — Aortic stenosis confirmed SATA
+  {
+    topic: 'Aortic Stenosis',
+    confirmed: true,
+    type: 'sata',
+    stem: 'The nurse is reviewing a chart for a school-age child with aortic stenosis. Which findings should the nurse anticipate documenting?',
+    options: [
+      'Systolic murmur heard best at the right upper sternal border',
+      'Reports of dizziness or passing out during physical education class',
+      'Strawberry tongue and peeling skin on the palms',
+      'Chest tightness and shortness of breath with exertion',
+      'Poor feeding and diaphoresis noted during bottle feedings',
+      'Currant jelly stools noted during diaper changes'
+    ],
+    answerArr: [0, 1, 3],
+    concept: 'Aortic Stenosis — Expected Findings',
+    rationale: 'Aortic stenosis in a school-age child: systolic murmur at the right upper sternal border (aortic valve area), syncope or dizziness with exertion (fixed obstruction limits cardiac output during activity), and chest tightness/dyspnea with exertion. Poor feeding is an infant finding. Strawberry tongue = Kawasaki. Currant jelly stools = intussusception.',
+    perOptionExplanations: {
+      0: '<strong>Systolic murmur — right upper sternal border</strong> — the hallmark location for an aortic stenosis murmur.',
+      1: '<strong>Syncope/dizziness with exertion</strong> — the fixed obstruction cannot increase cardiac output to meet exercise demands; cerebral perfusion drops.',
+      3: '<strong>Chest tightness and dyspnea with exertion</strong> — myocardial ischemia from inadequate outflow during activity.'
+    },
+    others: {
+      2: 'Strawberry tongue and peeling skin are hallmark signs of Kawasaki disease, not aortic stenosis.',
+      4: 'Poor feeding and diaphoresis during feedings are infant CHF signs — this patient is school-age.',
+      5: 'Currant jelly stools are the hallmark sign of intussusception — a GI emergency, not a cardiac finding.'
+    }
+  },
+  // 14 — VSD murmur application
+  {
+    topic: 'VSD',
+    confirmed: false,
+    type: 'standard',
+    stem: 'During a newborn assessment, the nurse auscultates a loud, harsh murmur at the left sternal border. The nurse documents this finding and notifies the provider. Which condition is most consistent with this murmur?',
+    options: [
+      'Patent Ductus Arteriosus',
+      'Aortic Stenosis',
+      'Ventricular Septal Defect',
+      'Tricuspid Atresia'
+    ],
+    answer: 2,
+    concept: 'VSD — Murmur Location',
+    rationale: 'A loud, harsh holosystolic murmur at the left sternal border is the characteristic murmur of a Ventricular Septal Defect. Turbulent blood flow through the septal defect from the high-pressure left ventricle into the right ventricle produces this sound.',
+    deepExplanation: 'Murmur location is the distinguishing detail: VSD = left sternal border, loud and harsh. PDA = continuous machine-like murmur below the left clavicle. Aortic stenosis = right upper sternal border. Knowing location + quality together pins down the defect.',
+    others: {
+      0: 'PDA produces a continuous "machine-like" murmur heard best below the left clavicle, not the left sternal border.',
+      1: 'Aortic stenosis produces a systolic murmur best heard at the right upper sternal border.',
+      3: 'Tricuspid atresia is a cyanotic defect — its murmur characteristics differ and it presents with cyanosis, not an isolated harsh murmur at the left sternal border.'
+    }
+  },
+  // 15 — TOF four defects application
+  {
+    topic: 'Tetralogy of Fallot',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A nursing student is asked why an infant with Tetralogy of Fallot is cyanotic. Which explanation by the student demonstrates correct understanding of the pathophysiology?',
+    options: [
+      '"The left ventricle pumps too hard against a narrowed aortic valve, backing blood up into the lungs."',
+      '"Pulmonary stenosis increases right ventricular pressure, forcing deoxygenated blood through the VSD into the aorta instead of to the lungs."',
+      '"The ductus arteriosus stays open and sends oxygenated blood back to the lungs instead of the body."',
+      '"Blood backs up from the right ventricle into the right atrium, causing systemic venous congestion and cyanosis."'
+    ],
+    answer: 1,
+    concept: 'TOF — Pathophysiology of Cyanosis',
+    rationale: 'In TOF, pulmonary stenosis obstructs right ventricular outflow, raising RV pressure. The high pressure forces deoxygenated blood across the VSD into the overriding aorta rather than through the lungs — this right-to-left shunt causes cyanosis because blood is entering systemic circulation without being oxygenated.',
+    deepExplanation: 'This question tests whether you can explain the mechanism, not just name the four defects. Pulmonary stenosis is the driving force — it creates the pressure gradient that makes the VSD shunt right-to-left. Without pulmonary stenosis, a VSD alone would shunt left-to-right (no cyanosis).',
+    others: {
+      0: 'This describes aortic stenosis causing left-sided backup — not TOF pathophysiology.',
+      2: 'A patent ductus arteriosus causes a left-to-right shunt — increased pulmonary blood flow, not cyanosis.',
+      3: 'Backing up into the right atrium describes right-sided heart failure — not the mechanism of TOF cyanosis.'
+    }
+  },
+  // 16 — Kawasaki aspirin phase transition
+  {
+    topic: 'Kawasaki Disease',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child with Kawasaki disease became afebrile this morning. The nurse reviews the medication administration record and notes the aspirin dose has not been changed from 90 mg/kg/day. Which action by the nurse is most appropriate?',
+    options: [
+      'Continue administering the current dose — it takes 7 days after fever resolution to transition',
+      'Discontinue aspirin entirely since the fever has resolved',
+      'Contact the provider to clarify whether the aspirin dose should be transitioned to the low-dose antiplatelet range',
+      'Switch from aspirin to ibuprofen now that the inflammatory phase has passed'
+    ],
+    answer: 2,
+    concept: 'Kawasaki — Aspirin Dose Transition',
+    rationale: 'Once a Kawasaki patient becomes afebrile, aspirin transitions from high-dose (80–100 mg/kg/day) to low-dose (3–5 mg/kg/day) for antiplatelet protection. The nurse should contact the provider to confirm and update the order — continuing high-dose aspirin after fever resolution is incorrect.',
+    deepExplanation: 'The nurse cannot change the dose independently — provider notification is required. But the nurse must recognize that the current dose is wrong for the clinical situation and act on it. Discontinuing aspirin entirely is also wrong — low-dose continues long-term for coronary protection.',
+    others: {
+      0: 'There is no 7-day waiting period — the transition happens when the child becomes afebrile.',
+      1: 'Aspirin is not discontinued — it continues at low dose for antiplatelet effects to protect the coronary arteries.',
+      3: 'Ibuprofen does not replace aspirin in Kawasaki disease management — low-dose aspirin must continue.'
+    }
+  },
+  // 17 — IE SATA clinical findings
+  {
+    topic: 'Infective Endocarditis',
+    confirmed: false,
+    type: 'sata',
+    stem: 'The nurse is assessing a child with suspected Infective Endocarditis. Which assessment findings support this diagnosis?',
+    options: [
+      'Fever present for 5 days',
+      'New murmur heard on auscultation that was not present at the last visit',
+      'Bilateral lower extremity pitting edema and jugular venous distension',
+      'Linear dark hemorrhages visible under the fingernails',
+      'Sudden onset of right-sided weakness and slurred speech',
+      'Peeling skin on the palms and strawberry tongue'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'IE — Assessment Findings',
+    rationale: 'IE findings: fever (systemic infection), new murmur (valve damage from vegetations), splinter hemorrhages under nails (microemboli), and neurological deficits like sudden weakness/slurred speech (embolic stroke from a dislodged vegetation). JVD and edema = right HF. Peeling skin + strawberry tongue = Kawasaki.',
+    perOptionExplanations: {
+      0: '<strong>Fever</strong> — systemic infection sign; persistent fever is a hallmark of IE.',
+      1: '<strong>New murmur</strong> — valve vegetations alter flow patterns, creating a new or changing murmur.',
+      3: '<strong>Splinter hemorrhages (dark lines under nails)</strong> — microemboli from valve vegetations lodge in nail bed capillaries.',
+      4: '<strong>Sudden weakness and slurred speech</strong> — a vegetation that breaks off can cause an embolic stroke; this is the embolic complication to monitor for.'
+    },
+    others: {
+      2: 'Bilateral pitting edema and JVD indicate right-sided heart failure — not specific to IE.',
+      5: 'Peeling skin on palms and strawberry tongue are hallmarks of Kawasaki disease, not IE.'
+    }
+  },
+  // 18 — Priority triage cardiac confirmed
+  {
+    topic: 'Priority — Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is assigned to four pediatric patients. Which patient should the nurse assess first?',
+    options: [
+      'A child with Kawasaki disease whose fever resolved yesterday and who is tolerating oral fluids',
+      'A child with right-sided heart failure whose morning weight is 0.3 kg above yesterday\'s',
+      'A child with sickle cell disease who is reporting chest pain and shortness of breath',
+      'A child with a VSD who is scheduled for an echocardiogram in two hours'
+    ],
+    answer: 2,
+    concept: 'Priority — Sickle Cell Chest Pain',
+    rationale: 'Chest pain and shortness of breath in a sickle cell patient indicates Acute Chest Syndrome — the leading cause of death in sickle cell disease. This is the highest-priority patient among the four. Confirmed as a specific test question: sickle cell patient with chest pain = see first.',
+    deepExplanation: 'Acute Chest Syndrome mimics pneumonia but is caused by sickling in the pulmonary vasculature — it can rapidly progress to respiratory failure. New chest symptoms in a sickle cell patient are never routine. The other three patients have important but non-emergent needs.',
+    others: {
+      0: 'A Kawasaki patient who is afebrile and tolerating fluids is clinically improving — not emergent.',
+      1: 'A 0.3 kg weight gain in a heart failure patient warrants attention and provider notification but is not as immediately life-threatening as chest pain in a sickle cell patient.',
+      3: 'A scheduled echocardiogram is a planned diagnostic test — not an urgent clinical assessment.'
+    }
+  },
+  // 19 — Tricuspid atresia vs TOF
+  {
+    topic: 'Cyanotic Defects',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A nursing student asks why both Tetralogy of Fallot and Tricuspid Atresia cause cyanosis while VSD does not. Which response by the preceptor best explains the difference?',
+    options: [
+      '"VSD causes a larger hole than either TOF or Tricuspid Atresia, so more blood gets to the lungs."',
+      '"TOF and Tricuspid Atresia both create right-to-left shunts that bypass the lungs; VSD creates a left-to-right shunt that sends extra blood to the lungs."',
+      '"VSD is less serious than both TOF and Tricuspid Atresia so it does not cause symptoms in infancy."',
+      '"Both cyanotic defects are located in the right side of the heart, while VSD only affects the left side."'
+    ],
+    answer: 1,
+    concept: 'Cyanotic vs Acyanotic — Shunt Direction',
+    rationale: 'TOF and Tricuspid Atresia both produce right-to-left shunts — blood bypasses the lungs and enters systemic circulation deoxygenated → cyanosis. VSD produces a left-to-right shunt — extra blood goes to the lungs, not away from them → no cyanosis, but heart failure.',
+    deepExplanation: 'The key teaching concept: shunt direction determines whether cyanosis occurs. Right-to-left = bypasses lungs = no oxygenation = cyanosis. Left-to-right = floods lungs = extra oxygenation = heart failure, not cyanosis. This framework explains every congenital defect.',
+    others: {
+      0: 'Defect size is not the determining factor — shunt direction is what determines whether cyanosis occurs.',
+      2: 'VSD can be very serious and cause significant heart failure in infancy — calling it "less serious" is inaccurate.',
+      3: 'VSD is in the ventricular septum — it involves both ventricles. The determining factor is shunt direction, not side of the heart.'
+    }
+  },
+  // 20 — Comprehensive cardiac priority SATA
+  {
+    topic: 'Cardiac — Nursing Actions SATA',
+    confirmed: false,
+    type: 'sata',
+    stem: 'The nurse is preparing a child with Tetralogy of Fallot for discharge. Which instructions should the nurse include in the teaching?',
+    options: [
+      'Recognize that squatting or knee-to-chest position during cyanotic episodes is a protective response',
+      'Feed the child in an upright position and allow frequent rest breaks during feeds',
+      'Vigorous physical activity is encouraged to strengthen the heart muscle',
+      'Notify the provider immediately if the child becomes deeply cyanotic, limp, or loses consciousness',
+      'Prophylactic antibiotics are required before dental and surgical procedures',
+      'The child should sleep prone to reduce the work of breathing'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'TOF — Discharge Teaching',
+    rationale: 'TOF discharge teaching: squatting/knee-to-chest is a protective instinct that increases SVR and reduces the spell; upright feeding with rest reduces cardiac workload; notify provider for severe cyanotic episodes (possible emergency); prophylactic ABX before procedures prevents IE in a child with a heart defect. Vigorous exercise is NOT encouraged. Prone sleep increases SIDS risk.',
+    perOptionExplanations: {
+      0: '<strong>Knee-to-chest is protective</strong> — parents should know this is the right response to a spell, not something to stop.',
+      1: '<strong>Upright feeding with rest breaks</strong> — reduces the cardiac workload during the effort of feeding.',
+      3: '<strong>Notify provider for severe cyanotic episodes</strong> — limp, unconscious, or deeply cyanotic = emergency.',
+      4: '<strong>Prophylactic antibiotics before procedures</strong> — TOF is a congenital heart defect requiring IE prophylaxis.'
+    },
+    others: {
+      2: 'Vigorous physical activity is not encouraged in TOF — it can trigger hypercyanotic episodes by increasing oxygen demand.',
+      5: 'Prone sleep increases SIDS risk and is contraindicated in all infants regardless of cardiac status.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+
+  if (q.confirmed) {
+    const banner = el('div', 'confirmed-banner');
+    banner.innerHTML = `<span class="confirmed-dot"></span>Confirmed Test Item — recalled from actual exam`;
+    card.appendChild(banner);
+  }
+
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      const confirmedTag = m.q.confirmed ? `<span class="missed-item-confirmed">🎯 confirmed test item</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <div><span class="missed-item-concept">${m.q.concept}</span>${confirmedTag}</div>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown">
+      <div class="breakdown-title">Topic Breakdown</div>
+      ${breakdownHTML}
+    </div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

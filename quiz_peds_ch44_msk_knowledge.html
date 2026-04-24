@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 44 — MSK Knowledge Check</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c; --teal: #0d9488; --teal-soft: #14b8a6;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --bg: #fafaf7;
+  --card: #ffffff; --line: #e5e0d5; --line-strong: #d4cdbd;
+  --correct: #059669; --correct-bg: #ecfdf5; --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+.sticky-header { position: sticky; top: 0; z-index: 100; background: var(--navy); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+.q-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06); animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.q-meta { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55; color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif; }
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+.opt-indicator { min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s; }
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn { padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.16s; }
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+.rationale-wrap { margin: 0 28px 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both; }
+.rationale-wrap.show { display: block; }
+.rat-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px; }
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn { width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card { background: var(--navy); border-radius: 20px; padding: 40px 32px; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+.results-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.retry-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 44 — MSK · Knowledge Check</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 18</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+<div class="main">
+  <div id="quiz-screen"><div class="q-card" id="q-card"></div></div>
+  <div id="results-screen"></div>
+</div>
+<script>
+const questions = [
+  // 1
+  {
+    topic: 'MSK Medications — Baclofen',
+    type: 'standard',
+    stem: 'A child with cerebral palsy is receiving Baclofen via intrathecal pump. Which side effects should the nurse monitor for?',
+    options: [
+      'Hypertension, tachycardia, and diaphoresis',
+      'Dry skin, photosensitivity, and elevated lipids',
+      'Drowsiness, weakness, and confusion',
+      'Nausea, hemarthrosis, and prolonged bleeding'
+    ],
+    answer: 2,
+    concept: 'Baclofen — Side Effects',
+    rationale: 'Baclofen is a muscle relaxant that reduces spasticity. Side effects include drowsiness, weakness, and confusion from CNS depression. The nurse must monitor for excessive sedation and fall risk.',
+    deepExplanation: 'Baclofen works centrally at the spinal cord level. CNS depression is the primary concern — especially when given intrathecally where drug levels are higher. Assess for changes in mental status and respiratory depression.',
+    others: {
+      0: 'Hypertension, tachycardia, and diaphoresis describe sympathetic nervous system activation — not Baclofen side effects.',
+      1: 'Dry skin, photosensitivity, and elevated lipids describe Isotretinoin side effects — not Baclofen.',
+      3: 'Hemarthrosis and prolonged bleeding describe hemophilia — not Baclofen side effects.'
+    }
+  },
+  // 2
+  {
+    topic: 'MSK Medications — Botulinum',
+    type: 'standard',
+    stem: 'A child with cerebral palsy receives Botulinum Toxin A injections to reduce spasticity in the right leg. Which statement correctly describes how this medication works?',
+    options: [
+      'It acts on the spinal cord to reduce spasticity throughout the entire body',
+      'It blocks neuromuscular conduction at the specific injection site',
+      'It increases bone density to prevent fractures from spasticity',
+      'It sedates the central nervous system to reduce muscle tone globally'
+    ],
+    answer: 1,
+    concept: 'Botulinum Toxin A — Mechanism',
+    rationale: 'Botulinum Toxin A blocks neuromuscular conduction locally at the injection site, providing targeted spasticity relief in specific muscle groups. This is different from Baclofen which works centrally and affects the whole body.',
+    deepExplanation: 'The key distinction: Botulinum toxin = local peripheral effect at specific muscles. Baclofen = central systemic effect via spinal cord. Botulinum is useful when only certain muscle groups are affected. Side effects are local: temporary weakness and injection site pain.',
+    others: {
+      0: 'Acting on the spinal cord for systemic spasticity reduction describes Baclofen — not Botulinum toxin.',
+      2: 'Increasing bone density describes bisphosphonates — not Botulinum toxin.',
+      3: 'Sedating the CNS globally describes Baclofen or benzodiazepines — not the targeted local mechanism of Botulinum toxin.'
+    }
+  },
+  // 3
+  {
+    topic: 'Casting — Nursing Care',
+    type: 'standard',
+    stem: 'A child returns from the ED with a new fiberglass cast on the right arm after a fracture. Which nursing interventions are priorities in the first 24 hours?',
+    options: [
+      'Elevate the extremity, apply ice around the cast, and assess neurovascular status',
+      'Keep the extremity dependent and apply heat to reduce stiffness',
+      'Remove the cast after 8 hours to inspect the skin underneath',
+      'Restrict all movement of the arm and avoid any assessment of the fingers'
+    ],
+    answer: 0,
+    concept: 'Cast Care — First 24 Hours',
+    rationale: 'First 24 hours post-casting: elevate the extremity (reduces swelling), apply ice around the cast (reduces inflammation), and assess neurovascular status frequently (detects early compartment syndrome). These three together are the priority nursing actions.',
+    deepExplanation: 'Elevation uses gravity to reduce edema. Ice reduces the inflammatory response in the first 24 hours. Neurovascular checks catch compartment syndrome early — the 6 P\'s must be assessed q4hrs for a new cast. Keeping the extremity dependent increases swelling.',
+    others: {
+      1: 'A dependent extremity worsens swelling — elevation is required. Heat would worsen inflammation — ice is used in the first 24 hours.',
+      2: 'The nurse never removes a cast — this requires a provider order and specialized equipment.',
+      3: 'Finger assessment is critical for neurovascular monitoring — restriction and avoidance of assessment would delay recognition of compartment syndrome.'
+    }
+  },
+  // 4
+  {
+    topic: 'Neurovascular Assessment',
+    type: 'standard',
+    stem: 'The nurse is performing a neurovascular assessment on a child with a leg cast. Which finding is the earliest warning sign of compartment syndrome?',
+    options: [
+      'Absent pedal pulse',
+      'Paralysis of the toes',
+      'Pain unrelieved by analgesics',
+      'Pallor of the foot'
+    ],
+    answer: 2,
+    concept: 'Compartment Syndrome — Early Sign',
+    rationale: 'Pain unrelieved by analgesics is the earliest sign of compartment syndrome. The 6 P\'s progress in severity — pain comes first, before pulse changes or paralysis. A child reporting increasing pain despite receiving pain medication requires immediate assessment and provider notification.',
+    deepExplanation: 'The sequence matters: Pain first (earliest) → Pallor → Paresthesia → Pulselessness → Paralysis → Pressure (late signs). By the time a pulse is absent, significant ischemia has occurred. Acting on unrelieved pain is what prevents permanent damage.',
+    others: {
+      0: 'Absent pedal pulse is a late sign of compartment syndrome — by this point significant ischemia has already occurred.',
+      1: 'Paralysis is a very late sign indicating nerve and muscle damage — action should have been taken long before this develops.',
+      3: 'Pallor occurs after pain in the progression of compartment syndrome — it is not the earliest sign.'
+    }
+  },
+  // 5
+  {
+    topic: 'Traction — Priorities',
+    type: 'sata',
+    stem: 'The nurse is caring for a child in skeletal traction for a femur fracture. Which nursing actions reflect correct traction management?',
+    options: [
+      'Ensure weights hang freely at all times',
+      'Remove weights during morning care for patient comfort',
+      'Never remove traction weights without a physician order',
+      'Maintain body alignment in the traction setup',
+      'Assess pin sites every shift for signs of infection',
+      'Lift weights briefly when repositioning the child up in bed'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'Traction — Correct Management',
+    rationale: 'Traction priorities: weights must hang freely at all times, never removed without physician order, maintain body alignment, and assess pin sites for infection. Removing or lifting weights — even briefly — disrupts the therapeutic traction force.',
+    perOptionExplanations: {
+      0: '<strong>Weights hang freely</strong> — resting on the bed or floor eliminates the therapeutic pulling force.',
+      2: '<strong>Never remove without physician order</strong> — traction is a prescribed medical treatment.',
+      3: '<strong>Maintain body alignment</strong> — proper alignment directs the traction force correctly for healing.',
+      4: '<strong>Assess pin sites</strong> — pins create direct entry points for infection into bone.'
+    },
+    others: {
+      1: 'Weights are NEVER removed during care — this disrupts the traction and requires a physician order.',
+      5: 'Lifting weights during repositioning eliminates traction force — the child must be repositioned without disturbing the weights.'
+    }
+  },
+  // 6
+  {
+    topic: 'Traction — Skin Care',
+    type: 'standard',
+    stem: 'A child in Buck\'s traction has redness and skin irritation noted under the traction bandage. What is the priority nursing assessment?',
+    options: [
+      'Remove the traction to relieve the skin pressure',
+      'Apply moisturizing lotion under the bandage to soothe the skin',
+      'Assess that the skin remains intact and dry, then notify the provider',
+      'Document the finding and reassess in 4 hours'
+    ],
+    answer: 2,
+    concept: 'Buck\'s Traction — Skin Priority',
+    rationale: 'When skin irritation is noted under traction, the priority assessment is to confirm skin integrity — that the skin remains intact and dry. The provider must be notified. Traction weights cannot be removed by the nurse without a physician order.',
+    deepExplanation: 'Skin integrity is the priority assessment for skin traction. "Intact and dry" is the standard — breakdown indicates a pressure injury is developing. The nurse assesses and reports; the provider decides on intervention. Applying lotion or removing traction without an order are both outside nursing scope here.',
+    others: {
+      0: 'Removing traction requires a physician order — the nurse cannot unilaterally remove it.',
+      1: 'Applying lotion under the bandage without a provider order alters the traction setup and is not within nursing scope.',
+      3: 'Waiting 4 hours with skin breakdown risk is inappropriate — assessment and provider notification must happen now.'
+    }
+  },
+  // 7
+  {
+    topic: 'Traction Types',
+    type: 'standard',
+    stem: 'The nurse is reviewing traction types with a nursing student. Which description correctly matches the traction type to its characteristics?',
+    options: [
+      'Skeletal traction uses bandages on the skin surface to apply pulling force',
+      'Halo traction is used for femur fractures in young children',
+      'Bryant\'s traction suspends both legs vertically and is used in young children for femur fractures',
+      'Buck\'s traction uses pins inserted into the bone for stronger pulling force'
+    ],
+    answer: 2,
+    concept: 'Traction Types — Bryant\'s',
+    rationale: 'Bryant\'s traction is a skin traction used specifically in young children for femur fractures. Both legs are suspended vertically at 90-degree hip flexion with the buttocks slightly raised. Buck\'s traction is also skin traction but used differently. Skeletal traction uses bone pins.',
+    deepExplanation: 'Skin traction (Buck\'s, Bryant\'s) applies force through the skin surface — no pins. Skeletal traction uses pins inserted into bone for stronger force. Halo traction is for cervical/spinal injuries. Bryant\'s = young children + bilateral vertical leg suspension + femur fracture.',
+    others: {
+      0: 'Skin traction uses bandages — skeletal traction uses pins inserted into bone.',
+      1: 'Halo traction is for cervical and spinal injuries — not femur fractures.',
+      3: 'Buck\'s traction is skin traction — pins in bone describes skeletal traction.'
+    }
+  },
+  // 8
+  {
+    topic: 'Neural Tube Defects — Types',
+    type: 'standard',
+    stem: 'The nurse is educating a student about neural tube defects. Which type is correctly identified as the most severe?',
+    options: [
+      'Spina bifida occulta — skin findings only, no sac present',
+      'Meningocele — meninges protrude through the defect',
+      'Myelomeningocele — spinal cord and meninges protrude',
+      'All three types carry identical neurological consequences'
+    ],
+    answer: 2,
+    concept: 'Neural Tube Defects — Severity',
+    rationale: 'Myelomeningocele is the most severe neural tube defect. Both the spinal cord and meninges protrude through the vertebral defect, causing motor and sensory loss below the level of the lesion. Meningocele only involves the meninges. Spina bifida occulta has no external sac.',
+    deepExplanation: 'Severity increases with what protrudes: occulta (nothing) → meningocele (meninges only, fewer deficits) → myelomeningocele (spinal cord + meninges = motor/sensory loss). The word "myelo" means spinal cord — its presence in the name tells you the cord is involved.',
+    others: {
+      0: 'Spina bifida occulta is the mildest form — skin findings only with no external sac or significant neurological deficits.',
+      1: 'Meningocele involves only the meninges — less severe than myelomeningocele because the spinal cord is not directly involved.',
+      3: 'These three types differ significantly in severity, presentation, and neurological consequences.'
+    }
+  },
+  // 9
+  {
+    topic: 'Myelomeningocele — Pre-op Care',
+    type: 'standard',
+    stem: 'A newborn with myelomeningocele is awaiting surgical repair. Which pre-operative nursing action is correct?',
+    options: [
+      'Position the infant supine with a roll under the hips for comfort',
+      'Cover the sac with a dry sterile gauze to keep it clean',
+      'Position the infant prone and cover the sac with a moist sterile dressing',
+      'Apply a firm circumferential wrap around the defect to prevent rupture'
+    ],
+    answer: 2,
+    concept: 'Myelomeningocele — Pre-op Positioning',
+    rationale: 'Pre-operative myelomeningocele care requires prone positioning (keeps weight off the sac) and a moist sterile dressing (prevents the neural tissue from drying and cracking). Both elements together are required — getting either one wrong compromises care.',
+    deepExplanation: 'Prone = no pressure on the sac. Moist = preserves delicate neural tissue integrity until surgery. Dry dressings can adhere to the sac and cause damage on removal. Supine places weight directly on the sac. Circumferential wrapping compresses neural tissue.',
+    others: {
+      0: 'Supine positioning places direct pressure on the myelomeningocele sac — prone is required.',
+      1: 'Dry gauze can adhere to and damage the delicate neural tissue — a moist sterile dressing is required.',
+      3: 'A circumferential wrap compresses the exposed spinal cord and nerve tissue — this would cause irreversible neurological damage.'
+    }
+  },
+  // 10
+  {
+    topic: 'Myelomeningocele — Post-op Care',
+    type: 'sata',
+    stem: 'A neonate returns from surgical closure of a myelomeningocele. Which post-operative nursing assessments are priorities?',
+    options: [
+      'Monitor for signs of increased intracranial pressure',
+      'Assess the surgical site for CSF leakage',
+      'Monitor blood glucose every 2 hours',
+      'Perform range of motion exercises on the lower extremities',
+      'Assess bladder and bowel function',
+      'Monitor temperature every 8 hours only'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Myelomeningocele — Post-op Priorities',
+    rationale: 'Post-op myelomeningocele priorities: monitor ICP (hydrocephalus can develop after closure), assess for CSF leakage at the surgical site, ROM exercises to maintain joint function, and bladder/bowel management (neurogenic dysfunction is common). Blood glucose monitoring and infrequent temp checks are not the priority post-op assessments.',
+    perOptionExplanations: {
+      0: '<strong>Monitor for increased ICP</strong> — surgical closure can alter CSF dynamics and lead to hydrocephalus.',
+      1: '<strong>Assess for CSF leakage</strong> — leakage at the repair site indicates surgical breakdown requiring immediate notification.',
+      3: '<strong>ROM exercises</strong> — maintains joint mobility in extremities affected by motor loss.',
+      4: '<strong>Bladder and bowel function</strong> — neurogenic dysfunction is common; CIC and bowel programs begin post-op.'
+    },
+    others: {
+      2: 'Blood glucose monitoring every 2 hours is not a priority post-op assessment specific to myelomeningocele repair.',
+      5: 'Temperature should be monitored more frequently post-operatively — every 8 hours is too infrequent for a post-surgical neonate.'
+    }
+  },
+  // 11
+  {
+    topic: 'Club Foot — Treatment',
+    type: 'standard',
+    stem: 'Parents of a newborn diagnosed with clubfoot ask the nurse what treatment will look like. Which response is most accurate?',
+    options: [
+      'Surgery is performed immediately and casting follows for 6 weeks',
+      'Weekly manipulation and serial cast changes are done first, progressing to bracing',
+      'Bracing alone corrects clubfoot in most cases without any casting',
+      'No treatment is needed until the child begins walking at 12 months'
+    ],
+    answer: 1,
+    concept: 'Club Foot — Treatment Sequence',
+    rationale: 'Clubfoot treatment follows the Ponseti method: weekly manipulation with serial cast changes initially, then cast changes every 2 weeks, followed by bracing or corrective shoes. Surgery is reserved for severe cases and follows conservative management.',
+    deepExplanation: 'The key sequence: weekly casting first → then every 2 weeks → then bracing. Surgery is not the first step. Early intervention is critical — the foot is most malleable in the newborn period. Weekly casting was the confirmed test answer.',
+    others: {
+      0: 'Surgery is not the initial treatment — conservative serial casting comes first.',
+      2: 'Bracing follows the casting phase — it cannot correct clubfoot alone as a first-line treatment.',
+      3: 'Treatment begins in the newborn period — waiting until walking age would allow the deformity to become fixed and much harder to correct.'
+    }
+  },
+  // 12
+  {
+    topic: 'Immobility — Complications',
+    type: 'standard',
+    stem: 'A child has been immobilized in traction for one week. Which complication should the nurse prioritize preventing through active nursing intervention?',
+    options: [
+      'Hypoglycemia from reduced caloric intake',
+      'Polycythemia from increased red cell production',
+      'Pneumonia from shallow breathing and secretion pooling',
+      'Hypernatremia from reduced fluid intake'
+    ],
+    answer: 2,
+    concept: 'Immobility — Pneumonia Prevention',
+    rationale: 'Pneumonia is a primary complication of immobility — the child cannot change position freely, leading to shallow breathing and pooling of secretions in the lung bases. Deep breathing and coughing exercises every 2 hours are the key preventive interventions.',
+    deepExplanation: 'Immobility complications include pressure ulcers, pneumonia, constipation, muscle atrophy, and contractures. Pneumonia prevention requires active nursing: deep breathing q2h, incentive spirometry, repositioning. Hypoglycemia and polycythemia are not direct immobility complications.',
+    others: {
+      0: 'Hypoglycemia is not a direct complication of immobility — it results from insufficient glucose intake or excess insulin.',
+      1: 'Polycythemia occurs in chronic hypoxia — not from immobility itself.',
+      3: 'Hypernatremia from fluid restriction is not a primary immobility complication — but encouraging fluids helps prevent constipation and urinary stasis.'
+    }
+  },
+  // 13
+  {
+    topic: 'Immobility — Nursing Interventions',
+    type: 'sata',
+    stem: 'The nurse is developing a plan of care for a school-age child immobilized in halo traction. Which interventions should be included?',
+    options: [
+      'Reposition the child every 2 hours to prevent pressure injuries',
+      'Perform range of motion exercises on unaffected extremities',
+      'Encourage deep breathing and coughing every 2 hours',
+      'Keep the bed completely flat to maintain traction alignment',
+      'Encourage fluid intake to prevent constipation and urinary stasis',
+      'Assess skin integrity at all pressure points each shift'
+    ],
+    answerArr: [0, 1, 2, 4, 5],
+    concept: 'Immobility — Nursing Interventions',
+    rationale: 'Immobility interventions: reposition q2h (pressure injuries), ROM on unaffected extremities (prevent contractures and atrophy), deep breathing q2h (prevent pneumonia), encourage fluids (prevent constipation and UTI), assess skin each shift. Keeping the bed completely flat is not required for halo traction and limits positioning options.',
+    perOptionExplanations: {
+      0: '<strong>Reposition q2h</strong> — prevents pressure injuries from prolonged contact with the bed surface.',
+      1: '<strong>ROM on unaffected extremities</strong> — maintains muscle strength and joint flexibility in areas not involved in the injury.',
+      2: '<strong>Deep breathing q2h</strong> — prevents pneumonia from shallow breathing and secretion pooling.',
+      4: '<strong>Encourage fluids</strong> — prevents constipation from decreased GI motility and reduces UTI risk.',
+      5: '<strong>Assess skin each shift</strong> — catches early pressure injury development before breakdown occurs.'
+    },
+    others: {
+      3: 'Keeping the bed completely flat is not required for halo traction and unnecessarily limits repositioning options that help prevent complications.'
+    }
+  },
+  // 14
+  {
+    topic: 'External Fixators',
+    type: 'standard',
+    stem: 'A child has an external fixator in place following a severe open tibial fracture. Which nursing assessment is most important for this device?',
+    options: [
+      'Assess the external frame for rust or corrosion daily',
+      'Monitor pin sites for signs of infection at each assessment',
+      'Remove the fixator daily to inspect the skin underneath',
+      'Apply ice packs to the frame to reduce pin site inflammation'
+    ],
+    answer: 1,
+    concept: 'External Fixators — Pin Site Care',
+    rationale: 'External fixators have pins that penetrate through the skin into the bone. Pin sites are direct pathways for infection to travel into the bone (osteomyelitis). Assessing pin sites for redness, warmth, drainage, and odor at every assessment is the priority nursing action.',
+    deepExplanation: 'Pin sites require meticulous monitoring and care. Signs of infection: increased redness, warmth, purulent drainage, odor, or the patient reporting increased pain at the site. Pin site infections can progress rapidly to osteomyelitis. External fixators are never removed by the nurse.',
+    others: {
+      0: 'Assessing for rust is not the nursing priority — pin site infection assessment is.',
+      2: 'External fixators are never removed by the nurse — removal requires a physician.',
+      3: 'Ice packs on the metal frame are not an appropriate intervention and could cause thermal injury to surrounding tissue.'
+    }
+  },
+  // 15
+  {
+    topic: 'Spina Bifida — Latex Precaution',
+    type: 'standard',
+    stem: 'A child with myelomeningocele is scheduled for a cystoscopy procedure. What is the nurse\'s priority action before the procedure begins?',
+    options: [
+      'Obtain a urine culture to rule out UTI before instrumentation',
+      'Ensure the procedure room and all supplies are completely latex-free',
+      'Place the child in the prone position to protect the spinal repair',
+      'Administer prophylactic antibiotics 30 minutes before the procedure'
+    ],
+    answer: 1,
+    concept: 'Spina Bifida — Latex Allergy Priority',
+    rationale: 'Children with myelomeningocele have a high incidence of latex allergy from repeated early exposures to latex products. Before any procedure, ensuring a completely latex-free environment is the priority safety action — latex exposure can cause anaphylaxis.',
+    deepExplanation: 'The latex allergy connection to spina bifida is one of the most tested concepts for this condition. Repeated early surgeries, catheterizations, and procedures sensitize these children to latex. All equipment — gloves, catheters, tubing — must be latex-free. This must happen before the procedure begins.',
+    others: {
+      0: 'A urine culture is a reasonable pre-procedure step but is not the priority safety action — latex allergy prevention comes first.',
+      2: 'Prone positioning is used pre-operatively to protect an intact myelomeningocele sac — not for a cystoscopy procedure years later.',
+      3: 'Prophylactic antibiotics are important for procedures in high-risk patients but the immediate safety priority is latex-free environment.'
+    }
+  },
+  // 16
+  {
+    topic: 'Neurovascular — 6 P\'s',
+    type: 'sata',
+    stem: 'The nurse is teaching a student about the 6 P\'s of neurovascular assessment. Which signs are included in this assessment framework?',
+    options: [
+      'Pain',
+      'Pallor',
+      'Pitting edema',
+      'Pulselessness',
+      'Paresthesia',
+      'Paralysis'
+    ],
+    answerArr: [0, 1, 3, 4, 5],
+    concept: 'Neurovascular Assessment — 6 P\'s',
+    rationale: 'The 6 P\'s of neurovascular assessment: Pain, Pallor, Pulselessness, Paresthesia (tingling), Paralysis, and Pressure (tightness). Pitting edema is not one of the 6 P\'s — it is a sign of fluid accumulation but not part of this specific neurovascular framework.',
+    perOptionExplanations: {
+      0: '<strong>Pain</strong> — earliest sign; unrelieved pain is the first indicator of compartment syndrome.',
+      1: '<strong>Pallor</strong> — decreased blood flow causes the skin distal to the injury to appear pale.',
+      3: '<strong>Pulselessness</strong> — absent or diminished pulse indicates vascular compromise.',
+      4: '<strong>Paresthesia</strong> — tingling or numbness from nerve compression.',
+      5: '<strong>Paralysis</strong> — inability to move the distal extremity from nerve/muscle ischemia.'
+    },
+    others: {
+      2: 'Pitting edema is not one of the 6 P\'s — the sixth P is Pressure (tightness in the compartment), not pitting edema.'
+    }
+  },
+  // 17
+  {
+    topic: 'Casting — Plaster vs Fiberglass',
+    type: 'standard',
+    stem: 'The nurse is explaining the difference between plaster and fiberglass casts to a parent. Which statement is correct?',
+    options: [
+      'Plaster is lighter and dries faster than fiberglass',
+      'Fiberglass is lighter and dries faster than plaster',
+      'Both types weigh the same but fiberglass is more water-resistant',
+      'Plaster is preferred for all pediatric fractures due to its flexibility'
+    ],
+    answer: 1,
+    concept: 'Cast Types — Plaster vs Fiberglass',
+    rationale: 'Fiberglass casts are lighter and dry faster than plaster casts. Plaster casts are heavier and take longer to dry but mold more precisely to contours. Both keep the bone immobilized but differ in weight, drying time, and water resistance.',
+    deepExplanation: 'The clinical implication: fiberglass is more practical for active children — lighter weight and quick drying means they can return to daily activities sooner. Plaster is still used when precise molding is needed. Knowing the properties distinguishes which type was applied when reading a chart or assessing a patient.',
+    others: {
+      0: 'This is reversed — plaster is heavy and slow to dry. Fiberglass is light and fast to dry.',
+      2: 'They do not weigh the same — fiberglass is notably lighter.',
+      3: 'Plaster is not universally preferred — fiberglass is often chosen for its light weight and durability.'
+    }
+  },
+  // 18
+  {
+    topic: 'MSK — Summary',
+    type: 'standard',
+    stem: 'The nurse is orienting a new nurse to the orthopedic unit. Which statement about traction management is correct?',
+    options: [
+      'Traction weights may be removed briefly during bathing with documentation',
+      'Skeletal traction uses bandages on the skin to apply the pulling force',
+      'Weights must hang freely at all times and are never removed without a physician order',
+      'Body alignment is maintained by keeping the bed in the Trendelenburg position'
+    ],
+    answer: 2,
+    concept: 'Traction — Key Rules',
+    rationale: 'Traction weights must hang freely at all times — resting on any surface eliminates the therapeutic force. They are never removed without a physician order regardless of the reason (bathing, repositioning, meals). These are the two non-negotiable traction rules.',
+    deepExplanation: 'These rules apply to ALL traction types. Weights touching the floor or bed = no therapeutic force = treatment failure. The physician orders the traction — only the physician can order it to be discontinued or interrupted. Nurses maintain the setup, never alter it.',
+    others: {
+      0: 'Weights are NEVER removed during bathing or any other care activity — this requires a physician order.',
+      1: 'Skeletal traction uses pins inserted into bone — skin traction uses bandages on the skin surface.',
+      3: 'Trendelenburg (head down) position is not the standard for traction management and could compromise neurovascular status.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <span class="missed-item-concept">${m.q.concept}</span>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown"><div class="breakdown-title">Topic Breakdown</div>${breakdownHTML}</div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

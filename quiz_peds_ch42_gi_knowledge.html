@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 42 — GI Knowledge Check</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540;
+  --navy-soft: #1a3a5c;
+  --teal: #0d9488;
+  --teal-soft: #14b8a6;
+  --ink: #1a1a1a;
+  --ink-soft: #3a3a3a;
+  --muted: #6b7280;
+  --bg: #fafaf7;
+  --card: #ffffff;
+  --line: #e5e0d5;
+  --line-strong: #d4cdbd;
+  --correct: #059669;
+  --correct-bg: #ecfdf5;
+  --wrong: #dc2626;
+  --wrong-bg: #fef2f2;
+  --partial: #d97706;
+  --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+.sticky-header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--navy); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+
+.q-card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  animation: fadeUp 0.3s ease both;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.q-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; background: var(--navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 13px 16px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: var(--bg);
+  cursor: pointer; transition: all 0.16s ease;
+  font-size: 14px; line-height: 1.55; color: var(--ink-soft);
+  text-align: left; width: 100%; font-family: 'Outfit', sans-serif;
+}
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+
+.opt-indicator {
+  min-width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s;
+}
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn {
+  padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.16s;
+}
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+
+.rationale-wrap {
+  margin: 0 28px 28px; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both;
+}
+.rationale-wrap.show { display: block; }
+
+.rat-header {
+  padding: 14px 18px; display: flex; align-items: center;
+  justify-content: space-between; flex-wrap: wrap; gap: 8px;
+}
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+
+.rat-badge {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em;
+}
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4;
+  padding: 3px 10px; border-radius: 99px; margin-bottom: 12px;
+}
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--line);
+}
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn {
+  width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px;
+  color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card {
+  background: var(--navy); border-radius: 20px; padding: 40px 32px;
+  text-align: center; margin-bottom: 28px; position: relative; overflow: hidden;
+}
+.results-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b);
+}
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.retry-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft));
+  border: none; border-radius: 12px; color: #fff;
+  font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.18s;
+}
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 42 — GI · Knowledge Check</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 18</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="quiz-screen">
+    <div class="q-card" id="q-card"></div>
+  </div>
+  <div id="results-screen"></div>
+</div>
+
+<script>
+const questions = [
+  // 1 — GI Assessment
+  {
+    topic: 'GI Assessment',
+    type: 'standard',
+    stem: 'The nurse is performing an abdominal assessment on a child with a suspected GI disorder. Absent bowel sounds on auscultation is most consistent with which condition?',
+    options: [
+      'Gastroesophageal reflux disease',
+      'Intestinal obstruction',
+      'Appendicitis at McBurney\'s point',
+      'Pyloric stenosis'
+    ],
+    answer: 1,
+    concept: 'GI Assessment — Bowel Sounds',
+    rationale: 'Absent bowel sounds indicate intestinal obstruction — the bowel has stopped moving. GERD and pyloric stenosis have active bowel sounds. Appendicitis may have decreased but not typically absent bowel sounds.',
+    deepExplanation: 'The GI assessment framework: bowel sounds absent = obstruction. This is a key clinical distinction. Active high-pitched tinkling sounds can indicate obstruction early; absent sounds indicate a late/complete obstruction or ileus.',
+    others: {
+      0: 'GERD involves reflux, not obstruction — bowel sounds are present.',
+      2: 'Appendicitis causes localized RLQ pain; bowel sounds may be decreased but not classically absent.',
+      3: 'Pyloric stenosis obstructs the gastric outlet but bowel sounds remain present.'
+    }
+  },
+  // 2 — GI Assessment hydration
+  {
+    topic: 'GI Assessment — Hydration',
+    type: 'standard',
+    stem: 'A nurse is assessing a 2-week-old newborn for dehydration. Which finding is most significant?',
+    options: [
+      'Fontanelle slightly sunken on palpation',
+      'Absence of tears when crying',
+      'Skin returns slowly after pinching',
+      'Urine output of 2 mL/kg/hr'
+    ],
+    answer: 1,
+    concept: 'Newborn Dehydration — Absent Tears',
+    rationale: 'Absence of tears in a newborn is a key indicator of dehydration. Newborns do not produce tears for the first few weeks of life, so absent tears in this context refers to lack of the expected moisture — a notable assessment finding flagged specifically in the review notes.',
+    deepExplanation: 'Hydration assessment in pediatrics uses: skin turgor, tears, and urine output. The absent tears sign in a newborn was specifically highlighted in your notes as a testable dehydration indicator. Normal urine output of 2 mL/kg/hr indicates adequate hydration.',
+    others: {
+      0: 'A slightly sunken fontanelle can be normal in a newborn; significantly sunken is concerning.',
+      2: 'Slow skin turgor is a dehydration sign but is less specific in newborns due to normal skin elasticity variation.',
+      3: 'A urine output of 2 mL/kg/hr is normal and indicates good hydration.'
+    }
+  },
+  // 3 — Pyloric Stenosis S/S
+  {
+    topic: 'Pyloric Stenosis',
+    type: 'standard',
+    stem: 'A 4-week-old male infant is brought to the clinic. The mother reports the baby vomits forcefully after every feeding but seems hungry again immediately afterward. On examination, the nurse palpates a small mass in the right upper quadrant. Which additional finding best supports this diagnosis?',
+    options: [
+      'Bilious green vomit and abdominal distention',
+      'Bloody mucus-filled stools and intermittent screaming',
+      'Non-bilious projectile vomiting and failure to gain weight',
+      'Failure to pass meconium and ribbon-like stools'
+    ],
+    answer: 2,
+    concept: 'Pyloric Stenosis — S/S',
+    rationale: 'Pyloric stenosis presents with non-bilious (no bile = obstruction above the bile duct) projectile vomiting, hunger immediately after vomiting ("hungry vomiter"), an olive-shaped RUQ mass, and failure to gain weight/dehydration. Confirmed test key finding: projectile vomiting.',
+    deepExplanation: 'Non-bilious is the critical detail — the obstruction is at the pylorus, which is proximal to where bile enters. So the vomit contains only stomach contents. Bilious vomit would suggest a lower obstruction. The "hungry vomiter" distinction separates pyloric stenosis from other causes of infant vomiting.',
+    others: {
+      0: 'Bilious vomit suggests obstruction distal to the bile duct, not pyloric stenosis.',
+      1: 'Bloody mucus stools and intermittent screaming are hallmarks of intussusception.',
+      3: 'Failure to pass meconium and ribbon-like stools describe Hirschsprung\'s disease.'
+    }
+  },
+  // 4 — Pyloric Stenosis treatment
+  {
+    topic: 'Pyloric Stenosis — Treatment',
+    type: 'standard',
+    stem: 'A 5-week-old infant is diagnosed with pyloric stenosis and taken to the OR. Which post-operative nursing care is correct?',
+    options: [
+      'NPO for 48 hours, then advance to solid foods',
+      'IV fluids, daily weight monitoring, resume feeds 24 hours after surgery',
+      'Clear liquids only for 1 week, no formula until discharge',
+      'Prone positioning and NG tube to suction for 24 hours post-op'
+    ],
+    answer: 1,
+    concept: 'Pyloric Stenosis — Post-op Care',
+    rationale: 'Post-pyloromyotomy care: IV fluids to maintain hydration, monitor daily weights, and resume formula or breastmilk 24 hours after surgery. The surgical repair is definitive and recovery is typically straightforward.',
+    deepExplanation: 'The 24-hour mark for resuming feeds is the specific testable detail. IV fluids bridge the gap between surgery and feeding resumption. Daily weights monitor hydration and nutritional recovery.',
+    others: {
+      0: 'NPO for 48 hours is too long — feeds resume at 24 hours post-op.',
+      2: 'Formula/breastmilk resumes at 24 hours — the infant does not stay on clear liquids for a week.',
+      3: 'Prone positioning is contraindicated in infants due to SIDS risk. NG suction is not standard post-pyloromyotomy care.'
+    }
+  },
+  // 5 — Intussusception S/S
+  {
+    topic: 'Intussusception',
+    type: 'standard',
+    stem: 'A parent brings a 9-month-old to the emergency department. She describes episodes where the baby screams intensely, draws his knees to his chest, then seems fine between episodes. The nurse notices the diaper contains dark red, mucus-filled stool. Which condition does the nurse suspect?',
+    options: [
+      'Hirschsprung\'s disease',
+      'Intussusception',
+      'Appendicitis',
+      'Pyloric stenosis'
+    ],
+    answer: 1,
+    concept: 'Intussusception — Recognition',
+    rationale: 'Intussusception classic triad: intermittent severe abdominal pain (screaming, knees to chest), "currant jelly" stools (bloody, mucus-filled), and a palpable sausage-shaped mass. The intermittent nature reflects telescoping causing ischemia in waves.',
+    deepExplanation: 'Currant jelly stools are the pathognomonic finding — they result from mucosal ischemia and sloughing as the telescoped bowel loses blood supply. The knees-to-chest posture is the child\'s instinctive response to visceral pain. This was confirmed as a test answer.',
+    others: {
+      0: 'Hirschsprung\'s presents with failure to pass meconium (newborn) or chronic constipation (older child) — not bloody mucus stools.',
+      2: 'Appendicitis presents with persistent RLQ pain at McBurney\'s point, not intermittent episodes.',
+      3: 'Pyloric stenosis presents with projectile vomiting in young infants, not bloody stools.'
+    }
+  },
+  // 6 — Intussusception treatment
+  {
+    topic: 'Intussusception — Treatment',
+    type: 'standard',
+    stem: 'The provider confirms intussusception via imaging. Which treatment does the nurse anticipate preparing the child for?',
+    options: [
+      'Immediate surgical pyloromyotomy',
+      'Pull-through procedure after rectal biopsy',
+      'Air or barium enema with IV fluids and NG tube decompression',
+      'High-dose steroids and bowel rest'
+    ],
+    answer: 2,
+    concept: 'Intussusception — Treatment',
+    rationale: 'Intussusception is treated with an air or barium enema, which is both diagnostic and therapeutic — the pressure of the enema can reduce the telescoping. IV fluids maintain hydration and an NG tube decompresses the obstructed bowel.',
+    deepExplanation: 'The enema works by pushing air or contrast material against the telescoped portion to push it back into place. If this fails, surgery is required. NG tube decompression prevents further bowel distention and vomiting.',
+    others: {
+      0: 'Pyloromyotomy is the surgical repair for pyloric stenosis, not intussusception.',
+      1: 'Pull-through procedure after rectal biopsy is the treatment for Hirschsprung\'s disease.',
+      3: 'Steroids are not used to treat intussusception.'
+    }
+  },
+  // 7 — GERD S/S
+  {
+    topic: 'GERD',
+    type: 'standard',
+    stem: 'During a well-child visit, the parent of a 3-month-old describes the infant frequently spitting up, being fussy during feedings, and arching the back while eating. The nurse recognizes the back-arching behavior as which phenomenon?',
+    options: [
+      'Moro reflex',
+      'Sandifer syndrome',
+      'Opisthotonus from meningeal irritation',
+      'Infantile spasm'
+    ],
+    answer: 1,
+    concept: 'GERD — Sandifer Syndrome',
+    rationale: 'Back-arching during feedings in an infant with GERD is called Sandifer syndrome. It is a key nursing assessment finding — the infant arches the back in response to esophageal pain from acid reflux.',
+    deepExplanation: 'Sandifer syndrome is the specific nursing assessment detail your notes emphasize for GERD. Recognizing it allows the nurse to identify reflux as the cause rather than a neurological condition. It is frequently tested as a distractor against neurological findings.',
+    others: {
+      0: 'The Moro reflex is a startle response — symmetric arm extension and flexion — not feeding-related arching.',
+      2: 'Opisthotonus is severe backward arching associated with meningitis or tetanus — a neurological emergency, not GERD.',
+      3: 'Infantile spasms are a seizure disorder with sudden flexion or extension episodes — distinct from feeding-related arching.'
+    }
+  },
+  // 8 — GERD positioning
+  {
+    topic: 'GERD — Positioning',
+    type: 'standard',
+    stem: 'A nurse is counseling parents on positioning for their infant with GERD. Which instruction is correct?',
+    options: [
+      'Place the infant prone after feedings to reduce reflux',
+      'Keep the infant upright for 30 minutes after feedings; use an infant seat during feeds',
+      'Position the infant on the left side during and after feeding',
+      'Lay the infant flat immediately after feeding to encourage gastric emptying'
+    ],
+    answer: 1,
+    concept: 'GERD — Positioning',
+    rationale: 'Upright positioning for 30 minutes after feeding uses gravity to keep stomach contents down. An infant seat provides the semi-upright angle needed during feeds. This was specifically confirmed as a test question — infant seat is the correct positional answer.',
+    deepExplanation: 'The prone position is dangerous (SIDS risk) and is NOT recommended for reflux management. Left-side positioning is used for adults with GERD but not the standard infant recommendation. Flat positioning worsens reflux. Infant seat was the specific answer recalled from the test.',
+    others: {
+      0: 'Prone positioning increases SIDS risk and is contraindicated — never recommended for infant reflux.',
+      2: 'Left-side positioning is an adult GERD strategy, not the standard recommendation for infants.',
+      3: 'Flat positioning allows gravity to work against the infant, worsening reflux.'
+    }
+  },
+  // 9 — GERD SATA
+  {
+    topic: 'GERD — Management SATA',
+    type: 'sata',
+    stem: 'The nurse is providing discharge teaching to a family whose infant was diagnosed with GERD. Which instructions should be included?',
+    options: [
+      'Thicken formula with rice cereal if ordered by the provider',
+      'Offer large, infrequent feedings to reduce feeding frequency',
+      'Keep the infant upright for 30 minutes after each feeding',
+      'Place the infant prone to sleep to reduce nighttime reflux',
+      'Offer small, frequent meals',
+      'Monitor for back arching during feedings'
+    ],
+    answerArr: [0, 2, 4, 5],
+    concept: 'GERD — Management SATA',
+    rationale: 'GERD management: thicken formula if ordered, upright 30 min post-feed, small frequent meals, and monitor for Sandifer syndrome (back arching). Large infrequent feedings worsen reflux by overfilling the stomach. Prone sleep is contraindicated due to SIDS risk.',
+    perOptionExplanations: {
+      0: '<strong>Thicken formula</strong> — adds weight to feeds, reduces regurgitation. Confirmed test SATA answer.',
+      2: '<strong>Upright 30 minutes post-feeding</strong> — gravity keeps stomach contents down. Confirmed test answer.',
+      4: '<strong>Small, frequent meals</strong> — prevents overfilling the stomach. Confirmed test answer.',
+      5: '<strong>Monitor for back arching (Sandifer syndrome)</strong> — key nursing assessment finding for GERD.'
+    },
+    others: {
+      1: 'Large infrequent feedings overfill the stomach and worsen reflux — the opposite of what is recommended.',
+      3: 'Prone positioning is contraindicated in infants due to SIDS risk regardless of reflux.'
+    }
+  },
+  // 10 — Hirschsprung's newborn
+  {
+    topic: 'Hirschsprung\'s Disease',
+    type: 'standard',
+    stem: 'A nurse is assessing a 28-hour-old newborn. The infant has not passed meconium since birth, is refusing to feed, and has vomited twice. Which condition is the nurse most concerned about?',
+    options: [
+      'Pyloric stenosis',
+      'Intussusception',
+      'Hirschsprung\'s disease',
+      'Gastroesophageal reflux disease'
+    ],
+    answer: 2,
+    concept: 'Hirschsprung\'s — Newborn Presentation',
+    rationale: 'Failure to pass meconium within 24–48 hours of birth is the hallmark newborn sign of Hirschsprung\'s disease. The absence of ganglion cells prevents peristalsis — stool cannot move through the affected segment.',
+    deepExplanation: 'The 24–48 hour window is the critical testable detail. Healthy newborns pass meconium within the first 24 hours. Pyloric stenosis does not appear until 2–8 weeks of life. Intussusception typically occurs at 6 months to 3 years.',
+    others: {
+      0: 'Pyloric stenosis develops at 2–8 weeks of life, not in the immediate newborn period.',
+      1: 'Intussusception occurs most commonly between 6 months and 3 years, not in newborns.',
+      3: 'GERD presents with spitting up and irritability, not failure to pass meconium.'
+    }
+  },
+  // 11 — Hirschsprung's older child
+  {
+    topic: 'Hirschsprung\'s Disease',
+    type: 'standard',
+    stem: 'An older child with undiagnosed Hirschsprung\'s disease is brought to the clinic for chronic constipation. Which stool characteristic is most consistent with this diagnosis?',
+    options: [
+      'Bloody mucus-filled currant jelly appearance',
+      'Fatty, foul-smelling, floating stools',
+      'Ribbon-like, foul-smelling stools',
+      'Pale clay-colored stools'
+    ],
+    answer: 2,
+    concept: 'Hirschsprung\'s — Older Child S/S',
+    rationale: 'In older children, Hirschsprung\'s disease produces ribbon-like, foul-smelling stools. The stool is forced through a narrowed aganglionic segment, producing the characteristic thin ribbon shape. The child may also appear undernourished and anemic.',
+    deepExplanation: 'The ribbon-like shape is the distinguishing stool characteristic for Hirschsprung\'s. Currant jelly = intussusception. Fatty floating = malabsorption (cystic fibrosis). Clay-colored = biliary obstruction. Each stool type points to a specific condition.',
+    others: {
+      0: 'Bloody mucus currant jelly stools are the hallmark of intussusception.',
+      1: 'Fatty, floating, foul-smelling stools suggest fat malabsorption — characteristic of cystic fibrosis or celiac disease.',
+      3: 'Clay-colored (acholic) stools indicate biliary obstruction or liver disease.'
+    }
+  },
+  // 12 — Hirschsprung's treatment
+  {
+    topic: 'Hirschsprung\'s — Treatment',
+    type: 'standard',
+    stem: 'A child is scheduled for a definitive diagnostic procedure for suspected Hirschsprung\'s disease, followed by surgical treatment. Which sequence is correct?',
+    options: [
+      'Ultrasound to confirm diagnosis, then pyloromyotomy',
+      'Rectal biopsy to confirm diagnosis, then pull-through procedure',
+      'Colonoscopy to confirm diagnosis, then bowel resection and reanastomosis',
+      'Barium enema to confirm, then high-fiber diet and stool softeners'
+    ],
+    answer: 1,
+    concept: 'Hirschsprung\'s — Diagnosis & Treatment',
+    rationale: 'Hirschsprung\'s is confirmed by rectal biopsy showing absence of ganglion cells. Treatment is surgical pull-through procedure — removing the aganglionic section and pulling healthy innervated bowel down to the anus.',
+    deepExplanation: 'Biopsy is the only way to definitively confirm absence of ganglion cells. Ultrasound confirms pyloric stenosis. Pull-through is specific to Hirschsprung\'s. Post-op diet: high protein, high calorie, LOW fiber — fiber is avoided because it adds bulk that the newly repaired bowel may not handle well.',
+    others: {
+      0: 'Ultrasound is used for pyloric stenosis. Pyloromyotomy treats pyloric stenosis, not Hirschsprung\'s.',
+      2: 'Colonoscopy is not the confirmatory test for Hirschsprung\'s — rectal biopsy is.',
+      3: 'High-fiber diet is contraindicated post-op in Hirschsprung\'s — low fiber is recommended.'
+    }
+  },
+  // 13 — Appendicitis S/S
+  {
+    topic: 'Appendicitis',
+    type: 'standard',
+    stem: 'A 10-year-old is brought to the ED with abdominal pain that started around the belly button and has since moved to the lower right side. Which assessment finding would most concern the nurse?',
+    options: [
+      'Pain increases when the nurse palpates the right lower quadrant',
+      'Sudden complete relief of pain after a period of intense pain',
+      'Nausea and low-grade fever accompanying the abdominal pain',
+      'Rebound tenderness at McBurney\'s point'
+    ],
+    answer: 1,
+    concept: 'Appendicitis — Rupture Warning Sign',
+    rationale: 'Sudden relief of pain in appendicitis signals rupture (perforation) of the appendix. This is a dangerous false improvement — the pain briefly stops as pressure releases, but peritonitis follows. This requires immediate provider notification.',
+    deepExplanation: 'This is the highest-stakes finding in appendicitis. Parents and students often misinterpret sudden pain relief as improvement. It is actually the most alarming sign — the appendix has burst. Confirmed test content: post-appendicitis rigid abdomen + pain = notify MD.',
+    others: {
+      0: 'RLQ pain on palpation is expected with appendicitis and confirms the location — it is not the most concerning finding.',
+      2: 'Nausea and low-grade fever are expected accompanying signs of appendicitis.',
+      3: 'Rebound tenderness is a classic appendicitis sign and supports the diagnosis, but sudden pain relief is more immediately alarming.'
+    }
+  },
+  // 14 — Appendicitis interventions
+  {
+    topic: 'Appendicitis — Nursing Interventions',
+    type: 'sata',
+    stem: 'A child is admitted with appendicitis and is scheduled for an appendectomy. Which nursing interventions are appropriate pre-operatively?',
+    options: [
+      'Maintain NPO status',
+      'Administer IV fluids and antibiotics as ordered',
+      'Apply a heating pad to the abdomen to reduce pain',
+      'Insert NG tube for decompression if ordered',
+      'Encourage oral fluids to prevent dehydration',
+      'Prepare the child for appendectomy'
+    ],
+    answerArr: [0, 1, 3, 5],
+    concept: 'Appendicitis — Pre-op Interventions',
+    rationale: 'Pre-op appendicitis care: NPO (nothing by mouth before surgery), IV fluids and antibiotics, NG tube for decompression if ordered, and prep for appendectomy. Heating pads are contraindicated — heat increases blood flow and can accelerate rupture. Oral fluids are contraindicated pre-op.',
+    perOptionExplanations: {
+      0: '<strong>NPO</strong> — mandatory before any surgical procedure to prevent aspiration.',
+      1: '<strong>IV fluids and antibiotics</strong> — IV fluids maintain hydration; antibiotics reduce infection risk and treat peritoneal contamination.',
+      3: '<strong>NG tube for decompression</strong> — reduces gastric pressure and risk of aspiration; also decompresses an obstructed bowel.',
+      5: '<strong>Prepare for appendectomy</strong> — appendectomy is the definitive treatment.'
+    },
+    others: {
+      2: 'Heating pads are CONTRAINDICATED — heat increases circulation to the area and can accelerate perforation of the appendix.',
+      4: 'Oral fluids are contraindicated pre-operatively (NPO status).'
+    }
+  },
+  // 15 — GI Diagnostics
+  {
+    topic: 'GI Diagnostics',
+    type: 'standard',
+    stem: 'A provider suspects pyloric stenosis in a 3-week-old infant. Which diagnostic test does the nurse anticipate being ordered first?',
+    options: [
+      'Rectal biopsy',
+      'Colonoscopy',
+      'Abdominal ultrasound',
+      'Barium enema'
+    ],
+    answer: 2,
+    concept: 'GI Diagnostics — Pyloric Stenosis',
+    rationale: 'Pyloric stenosis is diagnosed via abdominal ultrasound, which visualizes the hypertrophied pyloric muscle. It is non-invasive, accurate, and the first-line diagnostic test.',
+    deepExplanation: 'Each GI condition has a preferred diagnostic test: pyloric stenosis = ultrasound, Hirschsprung\'s = rectal biopsy, intussusception = air/barium enema (also therapeutic). Knowing which test goes with which condition is a frequent exam question.',
+    others: {
+      0: 'Rectal biopsy confirms Hirschsprung\'s disease by demonstrating absent ganglion cells.',
+      1: 'Colonoscopy is used for lower GI evaluation — not the first-line test for pyloric stenosis.',
+      3: 'Barium enema is used to diagnose and treat intussusception, not pyloric stenosis.'
+    }
+  },
+  // 16 — Comparing GI conditions
+  {
+    topic: 'GI Conditions — Comparison',
+    type: 'standard',
+    stem: 'The nurse is reviewing four pediatric charts. Which patient presentation most clearly distinguishes intussusception from other GI conditions?',
+    options: [
+      'Male infant with non-bilious vomiting and olive-shaped RUQ mass',
+      'Newborn with no meconium passage in 36 hours and abdominal distention',
+      'Toddler with intermittent screaming, knees drawn to chest, and currant jelly stools',
+      'School-age child with RLQ pain that started periumbilically and low-grade fever'
+    ],
+    answer: 2,
+    concept: 'GI Differential — Intussusception',
+    rationale: 'The triad of intermittent severe pain (screaming, knees to chest), currant jelly stools, and the toddler age group is pathognomonic for intussusception. Each other option describes a different condition.',
+    deepExplanation: 'Option A = pyloric stenosis. Option B = Hirschsprung\'s. Option D = appendicitis. Being able to match the clinical picture to the condition without the diagnosis being given is a core NCLEX skill.',
+    others: {
+      0: 'Non-bilious vomiting with olive-shaped RUQ mass in a male infant = pyloric stenosis.',
+      1: 'No meconium at 36 hours with distention in a newborn = Hirschsprung\'s disease.',
+      3: 'Periumbilical pain migrating to RLQ with fever = appendicitis.'
+    }
+  },
+  // 17 — Post-appendicitis priority
+  {
+    topic: 'Appendicitis — Post-op Priority',
+    type: 'standard',
+    stem: 'A child who underwent an appendectomy 8 hours ago now reports abdominal pain and the nurse assesses a rigid, board-like abdomen. What is the priority nursing action?',
+    options: [
+      'Administer the prescribed PRN analgesic and reassess in 30 minutes',
+      'Notify the provider immediately',
+      'Encourage ambulation to stimulate bowel function',
+      'Place the child in a prone position to reduce abdominal tension'
+    ],
+    answer: 1,
+    concept: 'Post-appendicitis — Rigid Abdomen Priority',
+    rationale: 'Abdominal pain with a rigid, board-like abdomen post-appendectomy signals peritonitis — a life-threatening complication. The priority is to notify the provider immediately. This was specifically confirmed as a test question.',
+    deepExplanation: 'Board-like rigidity = involuntary guarding = peritoneal irritation = peritonitis. This is a surgical emergency. Giving analgesics without notifying the provider first delays critical intervention. Ambulation and prone positioning are inappropriate in this acute scenario.',
+    others: {
+      0: 'Administering analgesics without notifying the provider first masks a potentially life-threatening complication and delays treatment.',
+      2: 'Ambulation is an appropriate post-op intervention in a stable patient — not when peritonitis is suspected.',
+      3: 'Prone positioning is not an intervention for abdominal rigidity or peritonitis.'
+    }
+  },
+  // 18 — GERD medications
+  {
+    topic: 'GERD — Medications',
+    type: 'standard',
+    stem: 'A child with GERD is prescribed Famotidine. The nurse explains to the parent that this medication works by which mechanism?',
+    options: [
+      'Coating the esophageal lining to prevent acid contact',
+      'Stimulating gastric motility to empty the stomach faster',
+      'Blocking histamine receptors to reduce acid production',
+      'Neutralizing existing stomach acid on contact'
+    ],
+    answer: 2,
+    concept: 'GERD — H2 Blocker Mechanism',
+    rationale: 'Famotidine is an H2 (histamine-2) antagonist. It blocks H2 receptors on parietal cells in the stomach, reducing acid production. Less acid means less esophageal irritation from reflux.',
+    deepExplanation: 'Two main medication classes for GERD: H2 blockers (Famotidine) reduce acid production by blocking histamine receptors. PPIs (Lansoprazole) block the proton pump entirely — a stronger mechanism. Prokinetics stimulate GI motility but are a separate drug class.',
+    others: {
+      0: 'Coating the esophagus describes the mechanism of sucralfate, not an H2 blocker.',
+      1: 'Stimulating gastric motility is the mechanism of prokinetics (e.g., metoclopramide), not H2 blockers.',
+      3: 'Neutralizing stomach acid on contact describes antacids (e.g., calcium carbonate), not H2 blockers.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+
+// ── HELPERS ────────────────────────────────────
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+const LETTERS = ['A','B','C','D','E','F'];
+
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts;
+  topicScores[topic].total += total;
+}
+
+function recordMiss(q, qNum, answerText, pts) {
+  missedItems.push({ q, qNum, answerText, pts });
+}
+
+// ── RENDER ─────────────────────────────────────
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+// ── SELECTION ──────────────────────────────────
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts;
+  trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q, correctSel, wrongSel);
+}
+
+// ── RATIONALE ──────────────────────────────────
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      const type = i === q.answer ? 'c' : 'w';
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${type}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q, correctSel, wrongSel) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+
+  const answerLetters = q.answerArr.map(i => LETTERS[i]).join(', ');
+  const answerText = q.answerArr.map(i => q.options[i]).join('; ');
+
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}">
+      <span class="rat-verdict">${verdict}</span>
+      <span class="rat-badge ${badgeClass}">${badgeText}</span>
+    </div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${answerLetters} — ${answerText}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+// ── NAVIGATION ─────────────────────────────────
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+// ── RESULTS ────────────────────────────────────
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <div class="missed-item-concept">${m.q.concept}</div>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown">
+      <div class="breakdown-title">Topic Breakdown</div>
+      ${breakdownHTML}
+    </div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

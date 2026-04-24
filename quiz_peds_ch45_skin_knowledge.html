@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Ch 45 — Integumentary Knowledge Check</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c; --teal: #0d9488; --teal-soft: #14b8a6;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --bg: #fafaf7;
+  --card: #ffffff; --line: #e5e0d5; --line-strong: #d4cdbd;
+  --correct: #059669; --correct-bg: #ecfdf5; --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+.sticky-header { position: sticky; top: 0; z-index: 100; background: var(--navy); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+.q-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06); animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.q-meta { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.q-topic { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55; color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif; }
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+.opt-indicator { min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s; }
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn { padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.16s; }
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+.rationale-wrap { margin: 0 28px 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both; }
+.rationale-wrap.show { display: block; }
+.rat-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px; }
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn { width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+#results-screen { display: none; animation: fadeUp 0.4s ease both; }
+.results-card { background: var(--navy); border-radius: 20px; padding: 40px 32px; text-align: center; margin-bottom: 28px; position: relative; overflow: hidden; }
+.results-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 72px; color: #fff; line-height: 1; margin-bottom: 8px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--teal-soft); margin-bottom: 6px; letter-spacing: 0.1em; }
+.results-msg { font-size: 15px; color: rgba(255,255,255,0.7); }
+.results-breakdown { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.breakdown-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.breakdown-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-topic { color: var(--ink-soft); }
+.breakdown-score { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500; }
+.breakdown-score.full { color: var(--correct); }
+.breakdown-score.partial { color: var(--partial); }
+.breakdown-score.zero { color: var(--wrong); }
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.retry-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+@media (max-width: 480px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-score { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Chapter 45 — Integumentary · Knowledge Check</div>
+    <div class="header-sub">Pediatric Nursing · Exam 4</div>
+  </div>
+  <div class="header-score" id="header-score">0 / 18</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+<div class="main">
+  <div id="quiz-screen"><div class="q-card" id="q-card"></div></div>
+  <div id="results-screen"></div>
+</div>
+<script>
+const questions = [
+  // 1
+  {
+    topic: 'Bacterial Skin — Impetigo',
+    type: 'standard',
+    stem: 'A child presents with a skin lesion that began as a small red macule, progressed to a vesicle, and is now covered with a yellowish-brown crust. Which condition does the nurse identify?',
+    options: [
+      'Cellulitis',
+      'Impetigo',
+      'Folliculitis',
+      'MRSA'
+    ],
+    answer: 1,
+    concept: 'Impetigo — Recognition',
+    rationale: 'Impetigo follows a classic progression: red macule → vesicle → honey-colored (yellowish-brown) crust. It is a highly contagious bacterial skin infection treated with topical mupirocin for mild cases or oral/IV antibiotics for extensive involvement.',
+    deepExplanation: 'The honey-colored crust is the pathognomonic finding for impetigo. Cellulitis presents as warm, red, swollen, firm skin without a crust. Folliculitis is a localized hair follicle infection. MRSA presents as severe, fluctuant abscesses that do not respond to standard antibiotics.',
+    others: {
+      0: 'Cellulitis presents as warm, red, swollen, firm skin — not the progressive macule to crust pattern.',
+      2: 'Folliculitis is an infection of the hair follicle presenting as pustules around follicles — not honey-colored crusting.',
+      3: 'MRSA presents as severe red swollen lesions or abscesses — not the classic honey-crust progression.'
+    }
+  },
+  // 2
+  {
+    topic: 'Bacterial Skin — MRSA',
+    type: 'standard',
+    stem: 'A child is admitted with a severe, fluctuant abscess on the buttocks that is not responding to cephalexin. Which medication does the nurse anticipate the provider ordering?',
+    options: [
+      'Mupirocin topical cream',
+      'Amoxicillin oral tablets',
+      'Vancomycin IV',
+      'Griseofulvin oral'
+    ],
+    answer: 2,
+    concept: 'MRSA — Treatment',
+    rationale: 'MRSA (methicillin-resistant Staph aureus) does not respond to beta-lactam antibiotics like cephalexin. Vancomycin is the treatment of choice for MRSA. Typical presentation: severe red swollen lesions on the face, buttocks, or neck.',
+    deepExplanation: 'The failure to respond to cephalexin is the clinical clue that this is MRSA. Methicillin-resistant means resistant to the entire beta-lactam class (penicillins, cephalosporins). Vancomycin targets the cell wall through a different mechanism that MRSA cannot resist.',
+    others: {
+      0: 'Topical mupirocin treats mild impetigo — not severe MRSA abscesses requiring systemic treatment.',
+      1: 'Amoxicillin is a penicillin — MRSA is resistant to the entire beta-lactam class.',
+      3: 'Griseofulvin treats fungal infections like tinea capitis — not bacterial MRSA.'
+    }
+  },
+  // 3
+  {
+    topic: 'Fungal Skin — Tinea Capitis',
+    type: 'standard',
+    stem: 'A school-age child is brought to the clinic with scaly, itchy patches on the scalp and areas where hair appears broken off at the scalp surface. Which treatment does the nurse anticipate?',
+    options: [
+      'Topical antifungal cream applied to the scalp daily',
+      'Topical mupirocin and oral cephalexin',
+      'Oral griseofulvin and selenium sulfide shampoo',
+      'Topical hydrocortisone cream to reduce inflammation'
+    ],
+    answer: 2,
+    concept: 'Tinea Capitis — Treatment',
+    rationale: 'Tinea capitis (scalp ringworm) requires oral griseofulvin because topical antifungals cannot penetrate the hair follicle effectively. Selenium sulfide shampoo is added to reduce spore shedding and decrease contagion. Hair loss/breakage is the key clinical finding.',
+    deepExplanation: 'The hair follicle penetration issue is why topical antifungals fail for tinea capitis — oral medication is required to reach the infection site. Selenium sulfide shampoo reduces the spread to classmates. Hair breakage off at the scalp surface distinguishes tinea capitis from other scalp conditions.',
+    others: {
+      0: 'Topical antifungals cannot penetrate the hair follicle — oral treatment is required.',
+      1: 'Mupirocin and cephalexin treat bacterial infections — tinea capitis is fungal.',
+      3: 'Hydrocortisone would suppress the immune response and worsen a fungal infection.'
+    }
+  },
+  // 4
+  {
+    topic: 'Fungal Skin — Candidiasis',
+    type: 'standard',
+    stem: 'An infant has a persistent diaper rash with satellite lesions spreading beyond the main rash area that has not responded to zinc oxide after 5 days. Which treatment is most appropriate?',
+    options: [
+      'Increase frequency of diaper changes and continue zinc oxide',
+      'Apply topical antifungal cream such as miconazole or clotrimazole',
+      'Apply topical hydrocortisone to reduce redness',
+      'Start oral antibiotics for suspected bacterial superinfection'
+    ],
+    answer: 1,
+    concept: 'Candidiasis — Diaper Rash Treatment',
+    rationale: 'Satellite lesions (small spots beyond the main rash) that do not respond to zinc oxide indicate Candidiasis — a fungal infection. Antifungal cream (miconazole or clotrimazole) is required. Zinc oxide has no antifungal activity.',
+    deepExplanation: 'Satellite lesions are the hallmark of Candidiasis diaper rash. Failure to respond to standard barrier treatment after several days should trigger suspicion for fungal infection. Hydrocortisone worsens fungal infections by suppressing immunity.',
+    others: {
+      0: 'Zinc oxide treats irritant dermatitis — it has no effect on fungal Candidiasis.',
+      2: 'Hydrocortisone suppresses immune defenses and would worsen a Candidiasis infection.',
+      3: 'Candidiasis is fungal, not bacterial — oral antibiotics would not treat it and could worsen yeast overgrowth.'
+    }
+  },
+  // 5
+  {
+    topic: 'Skin Diagnostics',
+    type: 'sata',
+    stem: 'The nurse is reviewing the laboratory and diagnostic tests available for pediatric skin conditions. Which pairings are correctly matched?',
+    options: [
+      'ESR — measures systemic inflammation',
+      'IgE — elevated in atopic/allergic conditions like eczema',
+      'KOH preparation — confirms fungal infection',
+      'Wood lamp — identifies contact allergens',
+      'Patch testing — identifies contact allergens',
+      'ESR — specifically diagnoses tinea capitis'
+    ],
+    answerArr: [0, 1, 2, 4],
+    concept: 'Skin Diagnostics — Correct Pairings',
+    rationale: 'ESR measures inflammation (elevated in many conditions). IgE is elevated in atopic/allergic conditions. KOH prep confirms fungal infections by dissolving skin cells to reveal fungal hyphae. Patch testing identifies contact allergens. Wood lamp differentiates bacterial from fungal — not patch testing.',
+    perOptionExplanations: {
+      0: '<strong>ESR → inflammation</strong> — confirmed test answer; elevated in any active inflammatory state.',
+      1: '<strong>IgE → atopic conditions</strong> — confirmed test answer; the allergy antibody elevated in eczema.',
+      2: '<strong>KOH prep → fungal</strong> — potassium hydroxide dissolves skin cells leaving fungal hyphae visible.',
+      4: '<strong>Patch testing → contact allergens</strong> — identifies specific substances causing allergic contact dermatitis.'
+    },
+    others: {
+      3: 'Wood lamp differentiates bacterial from fungal infections — patch testing identifies allergens.',
+      5: 'ESR is a nonspecific inflammation marker — it does not specifically diagnose tinea capitis.'
+    }
+  },
+  // 6
+  {
+    topic: 'Atopic Dermatitis',
+    type: 'standard',
+    stem: 'A 2-year-old is diagnosed with atopic dermatitis. The nurse expects the rash to appear primarily on which body location in this age group?',
+    options: [
+      'Flexor surfaces such as the inner elbows and behind the knees',
+      'The face and scalp',
+      'The palms of the hands and soles of the feet',
+      'The trunk and lower back'
+    ],
+    answer: 1,
+    concept: 'Atopic Dermatitis — Age-Specific Location',
+    rationale: 'In infants and very young children, atopic dermatitis (eczema) primarily affects the face and scalp. In older children it shifts to the flexor surfaces (inner elbows, behind knees). The location shifts with age — knowing which is which is a common test point.',
+    deepExplanation: 'The age-location pattern: infants → face/scalp. Older children → flexor areas. This is because infants explore with their face and have different skin distribution of irritants. The itchy, red, dry, scaly appearance is the same — just different locations by age.',
+    others: {
+      0: 'Flexor surfaces are the location in older children and adolescents — not infants and toddlers.',
+      2: 'Palms and soles are characteristic of other conditions like hand-foot-mouth disease — not atopic dermatitis.',
+      3: 'Trunk and lower back are not the characteristic locations for atopic dermatitis in any age group.'
+    }
+  },
+  // 7
+  {
+    topic: 'Burns — Degree Classification',
+    type: 'standard',
+    stem: 'A child sustains a burn injury. The affected area has fluid-filled blisters and the skin appears moist and weeping. The child reports intense pain at the site. Which burn degree is this?',
+    options: [
+      'First degree — superficial',
+      'Second degree — partial thickness',
+      'Third degree — full thickness',
+      'Fourth degree — involves muscle'
+    ],
+    answer: 1,
+    concept: 'Burns — Second Degree',
+    rationale: 'Second degree (partial thickness) burns involve the epidermis and dermis. They present with blisters, moist/weeping skin, and intense pain because nerve endings in the dermis are exposed but intact. Confirmed test answer: 2nd degree = wet, blisters.',
+    deepExplanation: 'Burn degree by appearance: 1st = red, dry, painful (epidermis only). 2nd = blisters, moist, intensely painful (epidermis + dermis). 3rd = white/charred, painless (all layers including nerves destroyed). The moisture and blister formation are the defining features of 2nd degree.',
+    others: {
+      0: 'First degree burns are red, dry, and painful without blisters — epidermis only.',
+      2: 'Third degree burns appear white or charred and are painless initially — all nerve endings are destroyed.',
+      3: 'Fourth degree involves muscle and bone — not part of the standard three-degree classification in the notes.'
+    }
+  },
+  // 8
+  {
+    topic: 'Burns — Priority Treatment',
+    type: 'standard',
+    stem: 'A child arrives at the ED with burns to the face and neck, singed nasal hairs, and a hoarse voice. Which intervention does the nurse prioritize first?',
+    options: [
+      'Establish IV access and begin fluid resuscitation',
+      'Assess and secure the airway',
+      'Apply silver sulfadiazine to the facial burns',
+      'Calculate total body surface area burned'
+    ],
+    answer: 1,
+    concept: 'Burns — Airway First',
+    rationale: 'Airway is always the first priority in burn management. Singed nasal hairs, facial burns, and hoarseness indicate inhalation injury — the airway is swelling and can obstruct rapidly. Intubation may be needed before the airway closes completely.',
+    deepExplanation: 'Signs of inhalation injury: singed eyebrows/nasal hairs, facial burns, hoarseness, soot in mouth/nose, stridor. These signs demand immediate airway assessment and likely intubation before anything else. A closed airway kills faster than fluid deficit or wound infection.',
+    others: {
+      0: 'IV access and fluids are critical but come after the airway is secured.',
+      2: 'Wound care is never the first priority — airway, breathing, and circulation come first.',
+      3: 'Calculating TBSA guides fluid resuscitation but cannot be the first priority when the airway is threatened.'
+    }
+  },
+  // 9
+  {
+    topic: 'Burns — Fluid Resuscitation',
+    type: 'standard',
+    stem: 'The nurse is reviewing burn care priorities with a student. Which statement about fluid resuscitation in burn injuries is correct?',
+    options: [
+      'Fluid replacement is most critical during the second 24 hours after the burn',
+      'Lactated Ringer\'s solution is the fluid of choice for burn resuscitation',
+      'Fluid replacement is delayed until after wound debridement is complete',
+      'Normal saline is preferred over Lactated Ringer\'s for burn patients'
+    ],
+    answer: 1,
+    concept: 'Burns — Fluid Resuscitation',
+    rationale: 'Lactated Ringer\'s (LR) is the fluid of choice for burn resuscitation. It most closely resembles the fluid lost through burned tissue. Fluid replacement is most critical in the first 24 hours (especially the first 2 hours) — not delayed until after debridement.',
+    deepExplanation: 'The first 24 hours, especially the first 2 hours, is the critical window for burn fluid resuscitation. Massive fluid shifts occur as capillary permeability increases. LR is preferred because it is isotonic and contains electrolytes matching the composition of plasma — normal saline lacks bicarbonate and can cause hyperchloremic acidosis.',
+    others: {
+      0: 'The first 24 hours — especially the first 2 hours — is the most critical period, not the second 24 hours.',
+      2: 'Fluid resuscitation begins immediately — delaying until after debridement would allow hypovolemic shock to develop.',
+      3: 'Lactated Ringer\'s is preferred over normal saline for burn resuscitation due to its balanced electrolyte composition.'
+    }
+  },
+  // 10
+  {
+    topic: 'Inflammatory Skin — Diaper Dermatitis',
+    type: 'standard',
+    stem: 'An infant has irritant diaper dermatitis. Which treatment approach is correct?',
+    options: [
+      'Apply antifungal cream and cover with an occlusive dressing',
+      'Frequent diaper changes, zinc oxide barrier cream, and air exposure',
+      'Oral antibiotics and topical hydrocortisone',
+      'Limit diaper changes to reduce skin friction and irritation'
+    ],
+    answer: 1,
+    concept: 'Diaper Dermatitis — Treatment',
+    rationale: 'Irritant diaper dermatitis is caused by moisture, urine, and friction. Treatment: frequent diaper changes (removes irritant), zinc oxide barrier cream (protects skin from moisture), and air exposure (allows skin to dry). No medications are needed for uncomplicated irritant dermatitis.',
+    deepExplanation: 'The three-part treatment addresses the cause: remove the irritant (frequent changes), protect the skin (zinc oxide), and allow healing (air exposure). If this fails after several days and satellite lesions appear, suspect Candidiasis and switch to antifungal treatment.',
+    others: {
+      0: 'Antifungal cream is for Candidiasis — not uncomplicated irritant dermatitis. Occlusive dressings trap moisture and worsen the condition.',
+      2: 'Oral antibiotics and hydrocortisone are not indicated for simple irritant diaper dermatitis.',
+      3: 'Limiting diaper changes leaves the infant in contact with urine and stool longer — worsening irritation.'
+    }
+  },
+  // 11
+  {
+    topic: 'Skin Diagnostics — ESR',
+    type: 'standard',
+    stem: 'The nurse is reviewing labs for a child with a known inflammatory skin condition. An elevated Erythrocyte Sedimentation Rate (ESR) indicates which finding?',
+    options: [
+      'Active fungal infection requiring antifungal treatment',
+      'Allergic sensitization requiring allergy testing',
+      'Systemic inflammation',
+      'Bacterial superinfection requiring antibiotics'
+    ],
+    answer: 2,
+    concept: 'ESR — Inflammation Marker',
+    rationale: 'ESR measures the rate at which red blood cells settle — elevated levels indicate systemic inflammation. It is a nonspecific marker that is elevated in many inflammatory conditions. It does not identify the cause or type of inflammation.',
+    deepExplanation: 'ESR = inflammation is the simple rule. It is elevated in Kawasaki disease, rheumatic fever, infections, and autoimmune conditions. It does not confirm fungal infection (KOH prep does that) or allergy (IgE does that). It is a screening tool that prompts further investigation.',
+    others: {
+      0: 'Fungal infection is confirmed with KOH prep or Wood lamp — not ESR.',
+      1: 'Allergic sensitization is identified by elevated IgE or patch testing — not ESR.',
+      3: 'Bacterial infection can elevate ESR but ESR alone does not confirm bacterial superinfection or guide antibiotic use.'
+    }
+  },
+  // 12
+  {
+    topic: 'Viral Skin — HSV',
+    type: 'standard',
+    stem: 'A teenager presents with painful vesicles clustered near the mouth. The nurse identifies this as HSV-1. Which treatment is anticipated?',
+    options: [
+      'Valacyclovir',
+      'Acyclovir',
+      'Griseofulvin',
+      'Vancomycin'
+    ],
+    answer: 1,
+    concept: 'HSV-1 — Treatment',
+    rationale: 'HSV-1 (oral herpes/cold sores) is treated with acyclovir. HSV-2 (genital herpes) is treated with valacyclovir. Both are antiviral medications but the standard agents differ by type.',
+    deepExplanation: 'The HSV type-to-medication pairing: HSV-1 = acyclovir. HSV-2 = valacyclovir. Griseofulvin treats fungal infections. Vancomycin treats MRSA. Knowing which antiviral goes with which HSV type is a common exam question.',
+    others: {
+      0: 'Valacyclovir is the treatment for HSV-2 (genital herpes) — not HSV-1.',
+      2: 'Griseofulvin is an antifungal — it has no activity against viral infections.',
+      3: 'Vancomycin is an antibiotic for MRSA — not a treatment for herpes simplex virus.'
+    }
+  },
+  // 13
+  {
+    topic: 'Isotretinoin — Safety',
+    type: 'sata',
+    stem: 'A 16-year-old is prescribed Isotretinoin for severe cystic acne. Which points must the nurse include in the education?',
+    options: [
+      'Two forms of contraception are required due to teratogenicity',
+      'Monthly laboratory monitoring is required throughout treatment',
+      'This medication is appropriate for mild acne that hasn\'t responded to cleanser',
+      'Report mood changes, depression, or suicidal thoughts immediately',
+      'Avoid prolonged sun exposure due to photosensitivity',
+      'Dry skin and lips are expected side effects'
+    ],
+    answerArr: [0, 1, 3, 4, 5],
+    concept: 'Isotretinoin — Patient Education',
+    rationale: 'Isotretinoin education: two forms of contraception (highly teratogenic), monthly labs (lipids and liver), report depression/suicidal ideation immediately, photosensitivity precautions, and expect dry skin/lips/eyes. Isotretinoin is ONLY for severe, treatment-resistant acne — not mild acne.',
+    perOptionExplanations: {
+      0: '<strong>Two forms of contraception</strong> — Isotretinoin causes severe birth defects; dual contraception is mandatory.',
+      1: '<strong>Monthly labs</strong> — monitors cholesterol, triglycerides, and liver enzymes.',
+      3: '<strong>Report mood changes</strong> — depression and suicidal ideation are known adverse effects requiring immediate reporting.',
+      4: '<strong>Photosensitivity</strong> — skin becomes more sensitive to UV; sunscreen is essential.',
+      5: '<strong>Dry skin and lips</strong> — expected from reduced sebum production; use moisturizer and lip balm.'
+    },
+    others: {
+      2: 'Isotretinoin is reserved for SEVERE, treatment-resistant acne only — not mild acne.'
+    }
+  },
+  // 14
+  {
+    topic: 'Acne Vulgaris — Treatment',
+    type: 'standard',
+    stem: 'A 14-year-old with moderate acne vulgaris is started on benzoyl peroxide. The nurse explains that this medication works by which mechanism?',
+    options: [
+      'Preventing clogged pores by increasing skin cell turnover',
+      'Reducing sebum production in the sebaceous glands',
+      'Killing bacteria on the skin surface through antibacterial action',
+      'Suppressing the immune response driving inflammatory acne'
+    ],
+    answer: 2,
+    concept: 'Benzoyl Peroxide — Mechanism',
+    rationale: 'Benzoyl peroxide works through antibacterial action — it releases oxygen that kills Cutibacterium acnes (the bacteria that causes acne inflammation). Tretinoin prevents clogged pores. Isotretinoin reduces sebum production.',
+    deepExplanation: 'Acne medication mechanisms: benzoyl peroxide = antibacterial. Tretinoin = prevents clogged pores (comedolytic). Isotretinoin = reduces sebum. Knowing which medication does what distinguishes them in exam questions.',
+    others: {
+      0: 'Preventing clogged pores by increasing cell turnover describes tretinoin (a retinoid) — not benzoyl peroxide.',
+      1: 'Reducing sebum production is the mechanism of Isotretinoin — not benzoyl peroxide.',
+      3: 'Immune suppression is not the mechanism of any of the standard acne treatments.'
+    }
+  },
+  // 15
+  {
+    topic: 'Stevens-Johnson Syndrome',
+    type: 'standard',
+    stem: 'A child develops a rapidly spreading rash with blistering involving the lips and conjunctiva after starting a new antibiotic. The nurse recognizes this presentation as which condition?',
+    options: [
+      'Severe contact dermatitis from a new medication allergy',
+      'Stevens-Johnson Syndrome — a medical emergency',
+      'Impetigo spreading from a localized infection',
+      'Atopic dermatitis triggered by the new medication'
+    ],
+    answer: 1,
+    concept: 'Stevens-Johnson Syndrome — Recognition',
+    rationale: 'Stevens-Johnson Syndrome is a severe hypersensitivity reaction triggered by medications (most commonly antibiotics and anticonvulsants). It involves BOTH skin AND mucous membranes — lip and eye involvement is the hallmark. It is a medical emergency.',
+    deepExplanation: 'Mucous membrane involvement is what elevates this to a medical emergency — it affects the mouth, eyes, and genitals in addition to skin. Medication trigger + rapid spread + mucous membrane involvement = SJS until proven otherwise. Immediate provider notification and supportive care are required.',
+    others: {
+      0: 'Contact dermatitis causes localized redness and blisters at the contact site — not widespread involvement with mucous membranes.',
+      2: 'Impetigo causes honey-colored crusting — not rapidly spreading blisters involving eyes and lips.',
+      3: 'Atopic dermatitis causes chronic dry, itchy skin — not acute blistering with mucous membrane involvement.'
+    }
+  },
+  // 16
+  {
+    topic: 'Skin Conditions — Comparison',
+    type: 'standard',
+    stem: 'The nurse is comparing tinea pedis and tinea capitis. Which statement correctly distinguishes these two fungal infections?',
+    options: [
+      'Tinea capitis affects the feet; tinea pedis affects the scalp',
+      'Both are treated with topical antifungals applied to the affected area',
+      'Tinea capitis affects the scalp and requires oral treatment; tinea pedis affects the feet and is treated topically',
+      'Both conditions cause hair loss as their primary clinical finding'
+    ],
+    answer: 2,
+    concept: 'Tinea Capitis vs Tinea Pedis',
+    rationale: 'Tinea capitis = scalp fungal infection requiring oral griseofulvin (topical cannot penetrate hair follicle). Tinea pedis = athlete\'s foot (feet) treated with topical antifungal creams. Location and required treatment route differ.',
+    deepExplanation: 'The location names are embedded in the Latin: capitis = head/scalp. pedis = foot. The treatment route difference is the key testable point — scalp infection requires oral medication while foot infection can be treated topically because the fungus is on the skin surface, not deep in hair follicles.',
+    others: {
+      0: 'This is reversed — capitis = scalp, pedis = feet.',
+      1: 'Tinea capitis requires oral treatment, not topical — topical antifungals cannot penetrate the hair follicle.',
+      3: 'Hair loss is characteristic of tinea capitis — tinea pedis causes cracking between the toes, not hair loss.'
+    }
+  },
+  // 17
+  {
+    topic: 'Burns — Infection Prevention',
+    type: 'standard',
+    stem: 'The nurse is caring for a child with significant second and third degree burns. Which medication does the nurse anticipate applying to the wound to prevent infection?',
+    options: [
+      'Topical mupirocin',
+      'Silver sulfadiazine',
+      'Topical hydrocortisone',
+      'Topical clotrimazole'
+    ],
+    answer: 1,
+    concept: 'Burns — Silver Sulfadiazine',
+    rationale: 'Silver sulfadiazine is the standard topical antimicrobial agent applied to burn wounds to prevent infection. Burn wounds are highly susceptible to infection because the skin barrier is destroyed. Silver sulfadiazine provides broad-spectrum antibacterial coverage.',
+    deepExplanation: 'Silver sulfadiazine = burn wound infection prevention. Mupirocin treats impetigo and minor bacterial skin infections. Hydrocortisone is a steroid — contraindicated on open wounds. Clotrimazole treats fungal infections. Burn wounds need antimicrobial coverage, not antifungal or anti-inflammatory agents.',
+    others: {
+      0: 'Mupirocin is used for impetigo and minor bacterial infections — not the standard agent for burn wound care.',
+      2: 'Hydrocortisone is a corticosteroid — applying it to open burn wounds would impair healing and increase infection risk.',
+      3: 'Clotrimazole is an antifungal — burn wounds primarily require antibacterial coverage.'
+    }
+  },
+  // 18
+  {
+    topic: 'Skin Conditions — Summary',
+    type: 'sata',
+    stem: 'The nurse is reviewing skin conditions and their treatments. Which pairings are correctly matched?',
+    options: [
+      'Impetigo — topical mupirocin or oral antibiotics',
+      'Tinea capitis — oral griseofulvin',
+      'Candidiasis diaper rash — zinc oxide barrier cream',
+      'MRSA — vancomycin',
+      'HSV-1 oral herpes — acyclovir',
+      'Cellulitis — vancomycin as first-line'
+    ],
+    answerArr: [0, 1, 3, 4],
+    concept: 'Skin Conditions — Treatment Matching',
+    rationale: 'Correct pairings: impetigo = mupirocin/antibiotics, tinea capitis = oral griseofulvin, MRSA = vancomycin, HSV-1 = acyclovir. Candidiasis requires antifungal cream (not zinc oxide). Cellulitis first-line is cephalexin or amoxicillin — vancomycin is for MRSA, not routine cellulitis.',
+    perOptionExplanations: {
+      0: '<strong>Impetigo → mupirocin or antibiotics</strong> — topical for mild, oral/IV for extensive.',
+      1: '<strong>Tinea capitis → oral griseofulvin</strong> — must be oral to penetrate the hair follicle.',
+      3: '<strong>MRSA → vancomycin</strong> — resistant to beta-lactams; vancomycin is required.',
+      4: '<strong>HSV-1 → acyclovir</strong> — standard antiviral for oral herpes.'
+    },
+    others: {
+      2: 'Candidiasis requires antifungal cream (miconazole or clotrimazole) — zinc oxide has no antifungal activity.',
+      5: 'Cellulitis first-line treatment is cephalexin or amoxicillin — vancomycin is reserved for MRSA or treatment failure.'
+    }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], topicScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+function trackTopic(topic, pts, total) {
+  if (!topicScores[topic]) topicScores[topic] = { pts: 0, total: 0 };
+  topicScores[topic].pts += pts; topicScores[topic].total += total;
+}
+function recordMiss(q, qNum, answerText, pts) { missedItems.push({ q, qNum, answerText, pts }); }
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-topic">${q.topic}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackTopic(q.topic, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackTopic(q.topic, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  const msg = pct >= 90 ? 'Content mastered. Exam-ready.' : pct >= 80 ? 'Strong. Review misses for final polish.' : pct >= 70 ? 'Passing. Focus on weakest areas.' : 'Review these concepts carefully.';
+  let breakdownHTML = '';
+  Object.entries(topicScores).forEach(([topic, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.9 ? 'full' : p >= 0.5 ? 'partial' : 'zero';
+    const display = s.total === 1 ? (p === 1 ? '✓' : '✗') : `${s.pts.toFixed(1)}/${s.total}`;
+    breakdownHTML += `<div class="breakdown-row"><span class="breakdown-topic">${topic}</span><span class="breakdown-score ${cls}">${display}</span></div>`;
+  });
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <span class="missed-item-concept">${m.q.concept}</span>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+  rs.innerHTML = `
+    <div class="results-card">
+      <div class="results-score">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+    </div>
+    <div class="results-breakdown"><div class="breakdown-title">Topic Breakdown</div>${breakdownHTML}</div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">🔄 Retake Quiz</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; topicScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

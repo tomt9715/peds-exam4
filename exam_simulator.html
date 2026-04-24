@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peds Exam 4 — Full Exam Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0a2540; --navy-soft: #1a3a5c; --teal: #0d9488; --teal-soft: #14b8a6;
+  --ink: #1a1a1a; --ink-soft: #3a3a3a; --muted: #6b7280; --bg: #fafaf7;
+  --card: #ffffff; --line: #e5e0d5; --line-strong: #d4cdbd;
+  --correct: #059669; --correct-bg: #ecfdf5; --wrong: #dc2626; --wrong-bg: #fef2f2;
+  --partial: #d97706; --partial-bg: #fffbeb;
+  --confirmed: #7c3aed; --confirmed-bg: #f5f3ff; --confirmed-border: #ddd6fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Outfit', sans-serif; background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+.sticky-header {
+  position: sticky; top: 0; z-index: 100; background: var(--navy); padding: 0 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px; box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+.header-left { display: flex; flex-direction: column; }
+.header-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: #fff; }
+.header-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.header-score { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 22px; color: #fff; }
+.progress-bar-wrap { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.1); }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--teal), var(--teal-soft)); transition: width 0.4s ease; }
+
+/* INTRO SCREEN */
+#intro-screen { max-width: 680px; margin: 60px auto; padding: 0 20px; text-align: center; }
+.intro-card { background: var(--navy); border-radius: 20px; padding: 48px 36px; position: relative; overflow: hidden; }
+.intro-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.intro-title { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 36px; color: #fff; margin-bottom: 8px; }
+.intro-sub { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); margin-bottom: 24px; }
+.intro-stats { display: flex; justify-content: center; gap: 36px; margin-bottom: 32px; flex-wrap: wrap; }
+.intro-stat-num { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 32px; color: #fff; line-height: 1; }
+.intro-stat-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 3px; }
+.intro-chapters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 32px; }
+.intro-chapter-pill { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 12px; text-align: left; }
+.intro-chapter-name { font-size: 12px; font-weight: 500; color: #fff; margin-bottom: 2px; }
+.intro-chapter-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal-soft); }
+.start-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; }
+.start-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+.main { max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+
+.q-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 16px rgba(0,0,0,0.06); animation: fadeUp 0.3s ease both; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.q-meta { display: flex; align-items: center; justify-content: space-between; padding: 14px 24px; background: var(--navy); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.q-chapter { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal-soft); }
+.q-num { font-family: 'DM Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+.confirmed-banner { display: flex; align-items: center; gap: 8px; padding: 9px 24px; background: var(--confirmed-bg); border-bottom: 1px solid var(--confirmed-border); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--confirmed); font-weight: 500; }
+.confirmed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--confirmed); flex-shrink: 0; box-shadow: 0 0 0 3px rgba(124,58,237,0.2); }
+
+.q-body { padding: 28px 28px 20px; }
+.q-stem { font-family: 'DM Serif Display', serif; font-size: 17px; line-height: 1.65; color: var(--ink); margin-bottom: 8px; }
+.q-instruction { font-size: 12px; color: var(--muted); font-style: italic; margin-bottom: 22px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; padding: 0 28px 24px; }
+.opt { display: flex; align-items: flex-start; gap: 14px; padding: 13px 16px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--bg); cursor: pointer; transition: all 0.16s ease; font-size: 14px; line-height: 1.55; color: var(--ink-soft); text-align: left; width: 100%; font-family: 'Outfit', sans-serif; }
+.opt:hover:not(.disabled) { border-color: var(--teal); background: #f0fdfa; transform: translateX(3px); }
+.opt.disabled { cursor: default; }
+.opt.selected { border-color: var(--teal); background: #f0fdfa; }
+.opt.correct { border-color: var(--correct); background: var(--correct-bg); color: #065f46; }
+.opt.wrong { border-color: var(--wrong); background: var(--wrong-bg); color: #7f1d1d; }
+.opt.missed { border-color: var(--partial); background: var(--partial-bg); border-style: dashed; color: #78350f; }
+.opt.dimmed { opacity: 0.45; }
+.opt-indicator { min-width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-strong); display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--muted); margin-top: 1px; flex-shrink: 0; transition: all 0.15s; }
+.opt.selected .opt-indicator { border-color: var(--teal); color: var(--teal); background: #f0fdfa; }
+.opt.correct .opt-indicator { border-color: var(--correct); background: var(--correct); color: #fff; }
+.opt.wrong .opt-indicator { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+.opt.missed .opt-indicator { border-color: var(--partial); background: var(--partial); color: #fff; }
+
+.sata-submit-wrap { padding: 0 28px 20px; }
+.sata-btn { padding: 11px 22px; background: var(--teal); border: none; border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.16s; }
+.sata-btn:hover { background: var(--teal-soft); transform: translateY(-1px); }
+
+.rationale-wrap { margin: 0 28px 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); display: none; animation: fadeUp 0.25s ease both; }
+.rationale-wrap.show { display: block; }
+.rat-header { padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.rat-header.correct-h { background: var(--correct-bg); border-bottom: 1px solid #a7f3d0; }
+.rat-header.wrong-h { background: var(--wrong-bg); border-bottom: 1px solid #fecaca; }
+.rat-header.partial-h { background: var(--partial-bg); border-bottom: 1px solid #fde68a; }
+.rat-verdict { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; }
+.rat-header.correct-h .rat-verdict { color: var(--correct); }
+.rat-header.wrong-h .rat-verdict { color: var(--wrong); }
+.rat-header.partial-h .rat-verdict { color: var(--partial); }
+.rat-badge { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 0.08em; }
+.correct-badge { background: #d1fae5; color: #065f46; }
+.wrong-badge { background: #fee2e2; color: #7f1d1d; }
+.partial-badge { background: #fef3c7; color: #78350f; }
+.rat-body { padding: 18px; background: #fff; }
+.rat-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; background: #f0fdfa; color: var(--teal); border: 1px solid #99f6e4; padding: 3px 10px; border-radius: 99px; margin-bottom: 12px; }
+.rat-answer { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 14px; color: var(--ink); margin-bottom: 12px; line-height: 1.5; }
+.rat-core { font-size: 13.5px; color: var(--ink-soft); line-height: 1.7; margin-bottom: 16px; }
+.rat-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.rat-option-row { display: flex; gap: 10px; margin-bottom: 10px; font-size: 13px; line-height: 1.6; }
+.rat-opt-letter { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; min-width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.rat-opt-letter.c { background: var(--correct-bg); color: var(--correct); }
+.rat-opt-letter.w { background: var(--wrong-bg); color: var(--wrong); }
+.rat-opt-text { color: var(--ink-soft); }
+.rat-opt-text strong { color: var(--ink); }
+.sata-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.legend-dot.c { background: var(--correct); }
+.legend-dot.m { background: var(--partial); }
+.legend-dot.w { background: var(--wrong); }
+
+.next-wrap { padding: 0 28px 28px; display: none; }
+.next-wrap.show { display: block; }
+.next-btn { width: 100%; padding: 14px; background: var(--navy); border: none; border-radius: 10px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.18s; letter-spacing: 0.03em; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.next-btn:hover { background: var(--navy-soft); }
+.next-arrow { transition: transform 0.2s; }
+.next-btn:hover .next-arrow { transform: translateX(4px); }
+
+/* RESULTS */
+#results-screen { display: none; animation: fadeUp 0.4s ease both; max-width: 860px; margin: 0 auto; padding: 36px 20px 80px; }
+.results-hero { background: var(--navy); border-radius: 20px; padding: 40px 32px; text-align: center; margin-bottom: 24px; position: relative; overflow: hidden; }
+.results-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--teal), var(--teal-soft), #f59e0b); }
+.results-grade { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 80px; color: #fff; line-height: 1; margin-bottom: 4px; }
+.results-pct { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--teal-soft); margin-bottom: 8px; letter-spacing: 0.1em; }
+.results-msg { font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+.results-chapter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.results-ch-pill { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 14px; text-align: left; }
+.results-ch-name { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8); margin-bottom: 4px; }
+.results-ch-score { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+.results-ch-score.full { color: #6ee7b7; }
+.results-ch-score.partial { color: #fcd34d; }
+.results-ch-score.low { color: #fca5a5; }
+
+.missed-section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+.missed-title { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+.missed-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.missed-item:last-child { border-bottom: none; }
+.missed-item-tags { display: flex; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; }
+.missed-item-concept { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: #fef3c7; color: #78350f; border: 1px solid #fde68a; padding: 2px 8px; border-radius: 99px; }
+.missed-item-confirmed { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--confirmed-bg); color: var(--confirmed); border: 1px solid var(--confirmed-border); padding: 2px 8px; border-radius: 99px; }
+.missed-item-q { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; line-height: 1.5; }
+.missed-item-q strong { color: var(--ink); }
+.missed-item-ans { font-size: 12.5px; color: var(--correct); margin-bottom: 4px; }
+.missed-item-rat { font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.retry-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--teal), var(--teal-soft)); border: none; border-radius: 12px; color: #fff; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.18s; }
+.retry-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+@media (max-width: 560px) {
+  .main { padding: 20px 14px 60px; }
+  .q-body { padding: 20px 16px 16px; }
+  .options { padding: 0 16px 20px; }
+  .rationale-wrap { margin: 0 16px 20px; }
+  .next-wrap { padding: 0 16px 20px; }
+  .q-stem { font-size: 15px; }
+  .results-grade { font-size: 60px; }
+  .results-chapter-grid { grid-template-columns: repeat(2, 1fr); }
+  .intro-chapters { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="sticky-header">
+  <div class="header-left">
+    <div class="header-title">Peds Exam 4 — Full Simulator</div>
+    <div class="header-sub">Chapters 41–46 · 50 Questions</div>
+  </div>
+  <div class="header-right">
+    <div class="header-score" id="header-score">0 / 50</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div id="intro-screen">
+  <div class="intro-card">
+    <div class="intro-title">Exam Simulator</div>
+    <div class="intro-sub">Pediatric Nursing · Exam 4</div>
+    <div class="intro-stats">
+      <div><div class="intro-stat-num">50</div><div class="intro-stat-label">Questions</div></div>
+      <div><div class="intro-stat-num">6</div><div class="intro-stat-label">Chapters</div></div>
+      <div><div class="intro-stat-num">40+</div><div class="intro-stat-label">Confirmed Items</div></div>
+    </div>
+    <div class="intro-chapters">
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 41 Cardiac</div><div class="intro-chapter-count">8 questions</div></div>
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 42 GI</div><div class="intro-chapter-count">8 questions</div></div>
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 43 GU</div><div class="intro-chapter-count">8 questions</div></div>
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 44 MSK</div><div class="intro-chapter-count">9 questions</div></div>
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 45 Skin</div><div class="intro-chapter-count">9 questions</div></div>
+      <div class="intro-chapter-pill"><div class="intro-chapter-name">Ch 46 Heme/Onco</div><div class="intro-chapter-count">8 questions</div></div>
+    </div>
+    <button class="start-btn" onclick="startExam()">Begin Exam</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen" style="display:none">
+  <div class="main">
+    <div class="q-card" id="q-card"></div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results-screen"></div>
+
+<script>
+const questions = [
+  // ── CH 41 CARDIAC (8) ────────────────────────────────────────────────────
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 4-year-old with Tetralogy of Fallot becomes acutely cyanotic while crying during a dressing change. The oxygen saturation drops to 65%. Which action does the nurse perform first?',
+    options: [
+      'Obtain IV access and administer a fluid bolus',
+      'Call a rapid response and prepare for cardioversion',
+      'Flex the knees toward the chest and apply supplemental oxygen',
+      'Place the child flat and elevate the legs'
+    ],
+    answer: 2,
+    concept: 'TOF — Tet Spell',
+    rationale: 'Knee-to-chest position increases systemic vascular resistance, reducing the right-to-left shunt and forcing more blood through the pulmonary circulation. Oxygen is applied concurrently. This is the priority first action for a hypercyanotic Tet spell.',
+    deepExplanation: 'Crying triggers increased oxygen demand and worsens the right-to-left shunt. Knee-to-chest physically traps blood in the lower extremities, increasing afterload and redirecting flow to the lungs. Confirmed test item.',
+    others: { 0: 'A fluid bolus does not address the mechanism of a Tet spell.', 1: 'This is not a dysrhythmia — cardioversion is not indicated.', 3: 'Flat with legs elevated does not increase systemic vascular resistance — knee-to-chest is the specific position required.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with Kawasaki disease has been afebrile for 48 hours. The nurse notes the aspirin order still reads 90 mg/kg/day. Which action is most appropriate?',
+    options: [
+      'Continue the current dose — it takes 5 days after fever breaks to transition',
+      'Discontinue aspirin entirely since the fever has resolved',
+      'Contact the provider to verify whether the dose should transition to 3–5 mg/kg/day',
+      'Switch from aspirin to ibuprofen for the antiplatelet effect'
+    ],
+    answer: 2,
+    concept: 'Kawasaki — Aspirin Dose Transition',
+    rationale: 'Once a Kawasaki patient becomes afebrile, aspirin transitions from high-dose (80–100 mg/kg/day) to low-dose (3–5 mg/kg/day) for antiplatelet protection. The nurse must contact the provider to update the order.',
+    deepExplanation: 'The nurse cannot change the dose independently but must recognize the clinical situation requires a provider order update. Continuing high-dose aspirin after fever resolution is incorrect. Discontinuing entirely is also wrong — low-dose continues long-term for coronary artery protection.',
+    others: { 0: 'There is no 5-day waiting period — the transition happens when the child becomes afebrile.', 1: 'Aspirin is not discontinued — it continues at low dose for antiplatelet coronary protection.', 3: 'Ibuprofen does not replace aspirin in Kawasaki management.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A newborn is diagnosed with a Ventricular Septal Defect. The parents ask why the baby sweats so much during feedings and never seems to finish a full bottle. Which explanation by the nurse is most accurate?',
+    options: [
+      'The baby has a fever from a concurrent infection affecting appetite',
+      'The VSD causes increased pulmonary blood flow, making feeding the equivalent of strenuous exercise for the infant',
+      'The baby is not hungry enough to complete feedings due to a metabolic disorder',
+      'Sweating during feedings is a normal newborn finding that resolves by 3 months'
+    ],
+    answer: 1,
+    concept: 'VSD — CHF Feeding Difficulty',
+    rationale: 'VSD causes a left-to-right shunt that floods the lungs, increasing the work of breathing. For a cardiac infant, feeding requires sustained respiratory effort — they fatigue before completing feeds and diaphorese from the exertion, resulting in poor weight gain.',
+    deepExplanation: 'Diaphoresis with feeds and failure to complete feedings are classic CHF signs in infants — equivalent to an adult becoming short of breath with mild exertion. The cardiac infant\'s heart cannot meet the increased oxygen demand of the effort required to feed.',
+    others: { 0: 'Nothing in the scenario suggests infection.', 2: 'The cause is cardiac, not metabolic.', 3: 'Diaphoresis during feedings in an infant with a known cardiac defect is never a normal finding to dismiss.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is caring for a child with Infective Endocarditis. When assessing for the most dangerous complication of this condition, the nurse monitors most closely for which finding?',
+    options: [
+      'Hypokalemia from prolonged antibiotic use',
+      'Coronary artery aneurysm formation',
+      'Signs of embolic events such as sudden neurological changes or hematuria',
+      'Petechiae and purpura from thrombocytopenia'
+    ],
+    answer: 2,
+    concept: 'IE — Emboli Monitoring',
+    rationale: 'Infected vegetations on heart valves can break off and travel as emboli to the brain (stroke), kidneys (hematuria), or other organs. Monitoring for embolic events is the priority nursing assessment in IE.',
+    deepExplanation: 'Confirmed test item — emboli was specifically recalled as the sign to monitor for. Valve vegetations are fragile clumps of bacteria and fibrin. A dislodged vegetation becomes a septic embolus causing infarction wherever it lodges.',
+    others: { 0: 'Hypokalemia is a concern with certain antibiotics but is not the primary IE complication.', 1: 'Coronary artery aneurysms are the complication of Kawasaki disease, not IE.', 3: 'Petechiae and purpura indicate ITP — not the primary IE complication.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 9-year-old presents with joint pain, a new heart murmur, and fever two weeks after an untreated strep throat infection. The provider orders a laboratory test to confirm the diagnosis of rheumatic fever. Which test does the nurse anticipate?',
+    options: [
+      'Erythrocyte Sedimentation Rate',
+      'Anti-Streptolysin O titer',
+      'C-reactive protein',
+      'Blood culture for Group A Strep'
+    ],
+    answer: 1,
+    concept: 'Rheumatic Fever — ASO Titer',
+    rationale: 'The Anti-Streptolysin O (ASO) titer detects antibodies against streptolysin O — a toxin produced by Group A Strep. An elevated titer confirms a recent strep infection as the trigger for rheumatic fever, even after the active infection has resolved.',
+    deepExplanation: 'Confirmed test item. The throat culture may be negative by the time rheumatic fever develops — the ASO titer captures immune evidence of the prior infection. ESR and CRP confirm inflammation but do not identify strep as the cause.',
+    others: { 0: 'ESR confirms inflammation but does not identify Group A Strep as the trigger.', 2: 'CRP indicates inflammation — not strep-specific.', 3: 'Blood culture detects active bacteremia — by this stage the strep infection may have resolved.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: false,
+    type: 'sata',
+    stem: 'The nurse is reviewing a care plan for a child with right-sided heart failure. Which nursing interventions are appropriate?',
+    options: [
+      'Weigh the child every morning before breakfast',
+      'Monitor for pulmonary crackles and frothy sputum',
+      'Maintain strict intake and output records',
+      'Assess for peripheral edema and hepatomegaly',
+      'Administer supplemental oxygen at 6L/min continuously',
+      'Elevate the head of the bed to reduce peripheral edema'
+    ],
+    answerArr: [0, 2, 3],
+    concept: 'Right-Sided HF — Nursing Interventions',
+    rationale: 'Right-sided HF management: daily weights (fluid retention monitoring), strict I&O, and assessment for systemic congestion (edema, hepatomegaly). Pulmonary crackles and frothy sputum are left-sided HF signs. Continuous O2 without indication is not standard. Elevating HOB reduces pulmonary congestion in left-sided HF, not peripheral edema.',
+    perOptionExplanations: { 0: '<strong>Daily weights</strong> — most sensitive indicator of fluid retention; weigh same time each morning.', 2: '<strong>Strict I&O</strong> — monitors fluid balance; guides diuretic management.', 3: '<strong>Edema and hepatomegaly</strong> — blood backing into the systemic circulation causes these right-sided findings.' },
+    others: { 1: 'Pulmonary crackles and frothy sputum indicate left-sided failure — fluid backs into the lungs, not the body.', 4: 'Continuous supplemental oxygen without documented hypoxia is not standard practice.', 5: 'HOB elevation reduces preload and pulmonary congestion in left-sided HF — not the intervention for peripheral edema from right-sided failure.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is caring for a child with Tricuspid Atresia. Which finding is most expected?',
+    options: [
+      'Bounding pulses and sweating with feedings',
+      'Loud harsh murmur at the left sternal border',
+      'Cyanosis, tachycardia, and digital clubbing',
+      'Peripheral edema and jugular venous distension'
+    ],
+    answer: 2,
+    concept: 'Tricuspid Atresia — S/S',
+    rationale: 'Tricuspid atresia is complete closure of the tricuspid valve causing right-to-left shunting. Blood bypasses the lungs → cyanosis. Chronic hypoxia causes compensatory digital clubbing. Tachycardia and dyspnea accompany the hypoxemia.',
+    deepExplanation: 'Tricuspid atresia is a cyanotic defect — it decreases pulmonary blood flow. Digital clubbing develops over time when tissues are chronically hypoxic. Bounding pulses and feeding sweats suggest a left-to-right shunt like VSD or PDA. JVD and edema indicate right-sided heart failure.',
+    others: { 0: 'Bounding pulses and diaphoresis with feeds suggest left-to-right shunts like PDA or VSD — not tricuspid atresia.', 1: 'A loud harsh murmur at the left sternal border is characteristic of VSD — not tricuspid atresia.', 3: 'JVD and peripheral edema indicate right-sided heart failure — not the cyanotic presentation of tricuspid atresia.' }
+  },
+  {
+    chapter: 'Ch 41 · Cardiac',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is caring for four patients on the pediatric unit. Which patient should be assessed first?',
+    options: [
+      'A child with Kawasaki disease who became afebrile this morning and is eating well',
+      'A child with right-sided heart failure whose weight is 0.4 kg above yesterday\'s',
+      'A child with sickle cell disease reporting chest pain and shortness of breath',
+      'A child with a VSD awaiting an echocardiogram scheduled for this afternoon'
+    ],
+    answer: 2,
+    concept: 'Priority — Acute Chest Syndrome',
+    rationale: 'Chest pain and shortness of breath in a sickle cell patient indicates Acute Chest Syndrome — the leading cause of death in sickle cell disease. This is a life-threatening emergency requiring immediate assessment.',
+    deepExplanation: 'Confirmed test item. Acute Chest Syndrome from pulmonary vascular sickling can progress to respiratory failure rapidly. The other patients have important but non-emergent needs. A Kawasaki patient eating well is improving. Weight gain in HF needs attention but is not immediately life-threatening. An echocardiogram is scheduled.',
+    others: { 0: 'A Kawasaki patient who is afebrile and eating is clinically improving.', 1: 'Weight gain in a heart failure patient warrants attention but is not as immediately life-threatening as Acute Chest Syndrome.', 3: 'A scheduled echocardiogram is a routine diagnostic — not an urgent assessment.' }
+  },
+
+  // ── CH 42 GI (8) ─────────────────────────────────────────────────────────
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 6-week-old male infant is brought to the ED. The parent reports forceful vomiting after every feeding for the past week. The infant appears hungry immediately after vomiting. On examination the nurse notes an olive-shaped mass in the right upper quadrant. Which condition does the nurse suspect?',
+    options: [
+      'Hirschsprung\'s disease',
+      'Intussusception',
+      'Pyloric stenosis',
+      'Gastroesophageal reflux disease'
+    ],
+    answer: 2,
+    concept: 'Pyloric Stenosis — Recognition',
+    rationale: 'Pyloric stenosis: male infant 2–8 weeks old, forceful non-bilious projectile vomiting, hungry immediately after vomiting ("hungry vomiter"), and olive-shaped RUQ mass. Confirmed test key finding: projectile vomiting.',
+    deepExplanation: 'The four classic features together are pathognomonic for pyloric stenosis. Non-bilious means the obstruction is above the bile duct. The "hungry vomiter" pattern distinguishes it from other causes of infant vomiting. Diagnosed by ultrasound, treated by pyloromyotomy.',
+    others: { 0: 'Hirschsprung\'s presents with failure to pass meconium in newborns — not projectile vomiting with an RUQ mass.', 1: 'Intussusception occurs at 6 months to 3 years with currant jelly stools and intermittent pain — not in a 6-week-old with an olive mass.', 3: 'GERD causes recurrent spitting up and back arching — not forceful projectile vomiting with an abdominal mass.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A parent brings a 9-month-old to the ED reporting episodes where the baby screams and draws the knees to the chest, followed by calm periods. The diaper contains dark red, mucus-filled stool. Which intervention does the nurse anticipate?',
+    options: [
+      'Prepare for emergency pyloromyotomy',
+      'Administer oral rehydration solution and discharge with GI follow-up',
+      'Insert NG tube and prepare for air or barium enema',
+      'Obtain stool culture and start oral antibiotics'
+    ],
+    answer: 2,
+    concept: 'Intussusception — Treatment',
+    rationale: 'Currant jelly stools + intermittent severe pain + knees-to-chest = intussusception. Treatment is air or barium enema (both diagnostic and therapeutic). NG tube decompresses the bowel. IV fluids maintain hydration.',
+    deepExplanation: 'Confirmed test item — currant jelly stools were specifically recalled as the answer clue. The enema pushes air or contrast against the telescoped segment to reduce it. NG tube prevents aspiration and reduces bowel distention from the obstruction.',
+    others: { 0: 'Pyloromyotomy treats pyloric stenosis — not intussusception.', 1: 'This is a surgical/procedural emergency — oral rehydration and discharge is inappropriate.', 3: 'Stool culture and antibiotics treat infection — not mechanical bowel telescoping.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: true,
+    type: 'sata',
+    stem: 'The nurse is providing discharge education to the family of an infant diagnosed with GERD. Which instructions should be included?',
+    options: [
+      'Keep the infant upright for 30 minutes after each feeding',
+      'Place the infant prone to sleep to reduce nighttime reflux episodes',
+      'Offer small, frequent feedings rather than large infrequent ones',
+      'Thicken formula with rice cereal if ordered by the provider',
+      'Monitor for back arching during feedings as a sign of esophageal discomfort',
+      'Restrict fluids in the evenings to reduce nighttime spitting up'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'GERD — Discharge Education',
+    rationale: 'GERD education: upright 30 min post-feed, small frequent meals, thicken formula if ordered, and monitor for Sandifer syndrome (back arching). Prone sleep is contraindicated due to SIDS risk. Fluid restriction is not recommended.',
+    perOptionExplanations: { 0: '<strong>Upright 30 minutes post-feed</strong> — gravity reduces reflux after feeding. Confirmed test answer.', 2: '<strong>Small frequent feedings</strong> — prevents overfilling the stomach. Confirmed test answer.', 3: '<strong>Thicken formula if ordered</strong> — reduces regurgitation frequency. Confirmed test answer.', 4: '<strong>Monitor for back arching (Sandifer syndrome)</strong> — key nursing assessment finding for GERD.' },
+    others: { 1: 'Prone positioning is strictly contraindicated — increases SIDS risk regardless of reflux.', 5: 'Fluid restriction is not a GERD management strategy — it could lead to dehydration.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A 5-year-old is admitted with suspected appendicitis. Which finding most urgently requires the nurse to notify the provider?',
+    options: [
+      'Nausea and refusal to eat since this morning',
+      'Temperature of 38.1°C and RLQ tenderness',
+      'Sudden and complete relief of abdominal pain',
+      'Rebound tenderness at McBurney\'s point'
+    ],
+    answer: 2,
+    concept: 'Appendicitis — Rupture Sign',
+    rationale: 'Sudden relief of pain in appendicitis signals rupture. When the appendix perforates, pressure releases momentarily causing the pain to stop — peritonitis rapidly follows. This requires immediate provider notification.',
+    deepExplanation: 'This is the most dangerous false-reassurance scenario in pediatric GI. Families will interpret it as improvement. Confirmed test content. Nausea, low-grade fever, and rebound tenderness are expected appendicitis findings. Sudden pain relief is the alarming outlier.',
+    others: { 0: 'Nausea and anorexia are expected appendicitis symptoms.', 1: 'Low-grade fever and RLQ tenderness are expected findings in appendicitis.', 3: 'Rebound tenderness supports the diagnosis but is expected — sudden pain relief is the more urgent change.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A newborn has not passed meconium 40 hours after birth and is refusing to feed. The nurse suspects Hirschsprung\'s disease. Which diagnostic test confirms this diagnosis?',
+    options: [
+      'Abdominal ultrasound',
+      'Barium enema',
+      'Rectal biopsy',
+      'Colonoscopy'
+    ],
+    answer: 2,
+    concept: 'Hirschsprung\'s — Diagnosis',
+    rationale: 'Rectal biopsy is the gold standard for confirming Hirschsprung\'s disease — it demonstrates the absence of ganglion cells in the affected bowel segment. No other test can definitively show this.',
+    deepExplanation: 'Absence of ganglion cells is the pathological hallmark of Hirschsprung\'s — only tissue sampling (biopsy) can confirm it. Ultrasound confirms pyloric stenosis. Barium enema shows the transition zone but is not confirmatory. Treatment after confirmation is the pull-through procedure.',
+    others: { 0: 'Ultrasound is the diagnostic test for pyloric stenosis — not Hirschsprung\'s.', 1: 'Barium enema may show the transition zone but cannot definitively confirm absent ganglion cells.', 3: 'Colonoscopy visualizes the bowel lumen but cannot confirm absent ganglion cells — biopsy is required.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child had an appendectomy 10 hours ago and is now reporting increasing abdominal pain. The nurse assesses a rigid, board-like abdomen. What is the priority nursing action?',
+    options: [
+      'Administer the ordered PRN analgesic and reassess in 30 minutes',
+      'Encourage early ambulation to stimulate bowel return',
+      'Notify the provider immediately',
+      'Apply a warm compress to the abdomen to reduce muscle guarding'
+    ],
+    answer: 2,
+    concept: 'Post-Appendectomy — Rigid Abdomen',
+    rationale: 'Board-like abdominal rigidity post-appendectomy indicates peritonitis — a life-threatening complication. Immediate provider notification is the priority. Confirmed test item.',
+    deepExplanation: 'Involuntary rigidity = peritoneal irritation = peritonitis. This is a surgical emergency. Analgesics mask a critical symptom and delay intervention. Ambulation is appropriate for a stable post-op patient — not one with signs of peritonitis. Heat worsens peritoneal inflammation.',
+    others: { 0: 'Analgesics without provider notification first masks a potentially life-threatening complication.', 1: 'Ambulation is appropriate for stable post-op patients — not one with rigid abdomen and increasing pain.', 3: 'Heat is contraindicated over an abdomen with suspected peritonitis.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is comparing Hirschsprung\'s disease in a newborn versus an older child. Which statement correctly describes the age-based difference in presentation?',
+    options: [
+      'Newborns present with currant jelly stools; older children present with projectile vomiting',
+      'Newborns present with failure to pass meconium; older children present with chronic constipation and ribbon-like stools',
+      'Both age groups present identically with abdominal distention and bilious vomiting',
+      'Older children present with failure to pass meconium; newborns present with ribbon-like stools'
+    ],
+    answer: 1,
+    concept: 'Hirschsprung\'s — Age-Based Presentation',
+    rationale: 'Hirschsprung\'s in newborns: failure to pass meconium within 24–48 hours, feeding refusal, and vomiting. In older children: chronic constipation, ribbon-like foul-smelling stools, undernourishment, and visible peristalsis.',
+    deepExplanation: 'The presentation changes with age because the aganglionic segment has been partially managed by compensatory mechanisms in older children — it manifests as chronic constipation rather than acute obstruction. The ribbon-like stool shape is caused by the stool being forced through a narrowed segment.',
+    others: { 0: 'Currant jelly stools describe intussusception; projectile vomiting describes pyloric stenosis.', 2: 'Bilious vomiting suggests a lower obstruction — Hirschsprung\'s presentations differ by age.', 3: 'This is reversed — newborns have the meconium failure; older children have the ribbon stools.' }
+  },
+  {
+    chapter: 'Ch 42 · GI',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is assessing a toddler with abdominal pain. Auscultation reveals absent bowel sounds in all four quadrants. Which condition does this finding most suggest?',
+    options: [
+      'Gastroesophageal reflux disease',
+      'Intestinal obstruction',
+      'Pyloric stenosis',
+      'Viral gastroenteritis'
+    ],
+    answer: 1,
+    concept: 'GI Assessment — Absent Bowel Sounds',
+    rationale: 'Absent bowel sounds in all four quadrants indicate intestinal obstruction — the bowel has stopped moving. This is a significant finding requiring immediate provider notification and NPO status.',
+    deepExplanation: 'Normal bowel sounds indicate peristalsis. Absent sounds = bowel has stopped = obstruction or paralytic ileus. High-pitched tinkling sounds are early obstruction. Complete absence is late/complete obstruction. GERD, pyloric stenosis, and viral gastroenteritis all have present (though possibly altered) bowel sounds.',
+    others: { 0: 'GERD involves reflux — bowel sounds are present and normal.', 2: 'Pyloric stenosis involves gastric outlet obstruction — bowel sounds below the obstruction are present.', 3: 'Viral gastroenteritis typically increases bowel sounds from hyperperistalsis.' }
+  },
+
+  // ── CH 43 GU (8) ─────────────────────────────────────────────────────────
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is diagnosed with Nephrotic Syndrome. The nurse correctly identifies which cluster of laboratory findings as consistent with this diagnosis?',
+    options: [
+      'Hematuria, elevated BUN, and hypertension',
+      'Proteinuria, hypoalbuminemia, and hyperlipidemia',
+      'Thrombocytopenia, hemolytic anemia, and azotemia',
+      'Elevated ASO titer, hematuria, and edema'
+    ],
+    answer: 1,
+    concept: 'Nephrotic Syndrome — Triad',
+    rationale: 'Nephrotic Syndrome: massive proteinuria → hypoalbuminemia → fluid shifts causing massive edema → compensatory hyperlipidemia. Confirmed test answer: the three hallmark findings are proteinuria, hypoalbuminemia, and hyperlipidemia.',
+    deepExplanation: 'The cascade: protein leaks through damaged glomeruli → albumin drops → oncotic pressure falls → fluid leaves vessels → massive edema. The liver compensates by producing more lipids. No hematuria in Nephrotic — that distinguishes it from AGN.',
+    others: { 0: 'Hematuria and hypertension with edema describe Acute Glomerulonephritis.', 2: 'Thrombocytopenia, hemolytic anemia, and azotemia describe the HUS triad.', 3: 'Elevated ASO titer with hematuria and edema describes post-strep AGN.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with Acute Glomerulonephritis is being discharged. The nurse provides dietary education. Which instruction is correct?',
+    options: [
+      'Increase sodium intake and encourage high-potassium foods',
+      'Low-sodium diet, fluid restriction, and restrict high-potassium foods',
+      'Low-sodium diet with encouragement of high-potassium foods',
+      'No dietary restrictions — medications will manage all symptoms'
+    ],
+    answer: 1,
+    concept: 'AGN — Dietary Management',
+    rationale: 'AGN management: low-sodium diet (reduces HTN and fluid retention), fluid restriction, and restriction of high-potassium foods (inflamed kidneys cannot excrete potassium — hyperkalemia risk). Confirmed test answer.',
+    deepExplanation: 'The potassium restriction is what distinguishes AGN from Nephrotic Syndrome management. In AGN, kidneys cannot filter properly → potassium accumulates → cardiac risk. In Nephrotic, diuretics deplete potassium → it must be replaced. Same sodium restriction, opposite potassium approach.',
+    others: { 0: 'Increased sodium worsens hypertension and edema — the opposite of the goal.', 2: 'Encouraging high-potassium foods describes Nephrotic Syndrome management — in AGN, potassium must be restricted.', 3: 'Dietary restrictions are critical in AGN management alongside medications.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with myelomeningocele and a neurogenic bladder is at highest risk for developing which urological complication?',
+    options: [
+      'Nephrotic Syndrome from glomerular damage',
+      'Vesicoureteral Reflux from incomplete bladder emptying',
+      'Acute Glomerulonephritis from recurrent strep infections',
+      'Testicular torsion from structural abnormalities'
+    ],
+    answer: 1,
+    concept: 'Neurogenic Bladder — VUR',
+    rationale: 'Neurogenic bladder causes incomplete emptying and high bladder pressures, forcing urine backward into the ureters and kidneys — Vesicoureteral Reflux. VUR leads to recurrent UTIs and renal scarring. Confirmed test answer.',
+    deepExplanation: 'The mechanism: neurogenic bladder → incomplete emptying → stasis + retrograde pressure → VUR → recurrent UTIs → renal scarring → hypertension → CKD. CIC (clean intermittent catheterization) performed frequently enough prevents overdistension and VUR development.',
+    others: { 0: 'Nephrotic Syndrome results from immune-mediated glomerular damage — not neurogenic bladder.', 2: 'AGN follows strep infection — unrelated to neurogenic bladder.', 3: 'Testicular torsion is structural and not related to neurogenic bladder from myelomeningocele.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'sata',
+    stem: 'A child returns from urinary diversion surgery. Which nursing interventions are correct in the first 24–48 hours?',
+    options: [
+      'Maintain IV fluids at 1.5 times the maintenance rate',
+      'Restrict oral and IV fluids to rest the surgical repair',
+      'Monitor urine output via Foley catheter or stent',
+      'Maintain strict intake and output',
+      'Monitor Foley catheter and stents for patency and obstruction'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'Post-op GU Care',
+    rationale: 'Post-op urinary diversion: IV fluids at 1.5× maintenance encourages high urinary output to flush the site, monitor Foley/stent output, strict I&O, and monitor patency. Fluid restriction is contraindicated — high output is the goal.',
+    perOptionExplanations: { 0: '<strong>1.5× maintenance IV fluids</strong> — encourages high urinary output to flush the surgical site. Confirmed test answer.', 2: '<strong>Monitor urine output</strong> — confirms the diversion is functioning.', 3: '<strong>Strict I&O</strong> — monitors fluid balance during aggressive hydration. Confirmed test answer.', 4: '<strong>Monitor patency</strong> — kinks or clots can obstruct the repair.' },
+    others: { 1: 'Fluid restriction is contraindicated — high urinary output is the post-operative goal.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 15-year-old male presents to the ED with sudden severe scrotal pain that began during basketball practice. The scrotum is swollen and appears dark blue-black. Which action by the nurse is most appropriate?',
+    options: [
+      'Apply ice packs to reduce swelling and administer oral analgesics',
+      'Obtain a urine culture and begin antibiotics for suspected epididymitis',
+      'Notify the provider immediately — surgery must occur within 6 hours',
+      'Reassure the patient and schedule an outpatient urology appointment'
+    ],
+    answer: 2,
+    concept: 'Testicular Torsion — Emergency',
+    rationale: 'Testicular torsion is a surgical emergency — the spermatic cord twists, cutting off blood flow. The dark blue-black scrotum indicates vascular compromise. Surgery within 6 hours is required to save the testicle. Confirmed test item.',
+    deepExplanation: 'Every minute of delay reduces the chance of testicular salvage. Sudden onset during activity + blue-black scrotum = torsion until proven otherwise. Ice and analgesics delay definitive treatment. Epididymitis is less acute and presents more gradually.',
+    others: { 0: 'Ice and analgesics delay the emergency surgery that is required.', 1: 'This is not an infectious condition — antibiotics are not the treatment.', 3: 'An outpatient appointment is completely inappropriate for a surgical emergency with a 6-hour window.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is admitted with Hemolytic Uremic Syndrome following an E. coli gastrointestinal infection. Which precaution does the nurse implement based on the expected laboratory findings?',
+    options: [
+      'Neutropenic precautions for low white blood cell count',
+      'Seizure precautions for hyponatremia',
+      'Bleeding precautions for thrombocytopenia',
+      'Airborne precautions for respiratory involvement'
+    ],
+    answer: 2,
+    concept: 'HUS — Bleeding Precautions',
+    rationale: 'HUS triad: hemolytic anemia + thrombocytopenia + AKI. Thrombocytopenia puts the child at significant bleeding risk — bleeding precautions are implemented. Confirmed test answer.',
+    deepExplanation: 'Low platelet count from immune-mediated destruction means the child cannot form clots effectively. Bleeding precautions: avoid unnecessary injections, use soft toothbrush, monitor for petechiae and purpura. Your friend specifically recalled bleeding precautions as the correct answer for HUS.',
+    others: { 0: 'Neutropenic precautions address low neutrophil counts — HUS causes thrombocytopenia, not neutropenia.', 1: 'Seizure precautions are not the primary HUS intervention.', 3: 'HUS does not involve respiratory transmission — airborne precautions are not indicated.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A 7-year-old girl has her second UTI in 6 months. The nurse is teaching the family about prevention. Which instruction is the most important single intervention?',
+    options: [
+      'Limit fluid intake to reduce the frequency of urination',
+      'Wipe from front to back after toileting',
+      'Take prophylactic antibiotics before every bath',
+      'Wear synthetic underwear to reduce moisture'
+    ],
+    answer: 1,
+    concept: 'UTI — Prevention',
+    rationale: 'Front-to-back wiping is the single most important UTI prevention strategy in girls — it prevents fecal bacteria from reaching the urethra. Combined with cotton underwear and avoiding bubble baths, it significantly reduces recurrence.',
+    deepExplanation: 'Female anatomy places the urethral opening close to the rectum. Back-to-front wiping introduces Escherichia coli directly toward the urethra — the primary mechanism of female UTI. Fluid intake should be increased, not limited. Synthetic underwear traps moisture.',
+    others: { 0: 'Fluid intake should be INCREASED — dilute urine flushes bacteria from the urinary tract.', 2: 'Prophylactic antibiotics before every bath is not standard care.', 3: 'Synthetic underwear traps moisture and heat — cotton is recommended.' }
+  },
+  {
+    chapter: 'Ch 43 · GU',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child is diagnosed with Chronic Kidney Injury. The nurse is planning dietary education. Which dietary modification is most important?',
+    options: [
+      'High-potassium, high-phosphorus diet to support kidney function',
+      'High-protein diet to replace urinary losses',
+      'Low-phosphorus, low-potassium diet with preparation for dialysis',
+      'Increased sodium intake to maintain blood pressure'
+    ],
+    answer: 2,
+    concept: 'CKI — Dietary Management',
+    rationale: 'CKI dietary management: low phosphorus (impaired excretion causes bone disease), low potassium (impaired excretion causes cardiac risk from hyperkalemia), and family preparation for eventual dialysis or transplant.',
+    deepExplanation: 'Both phosphorus and potassium accumulate in CKI because the kidneys cannot excrete them. Phosphorus accumulation leaches calcium from bones → renal osteodystrophy. Potassium accumulation → cardiac dysrhythmias. Sodium restriction reduces fluid retention and hypertension.',
+    others: { 0: 'High potassium and phosphorus worsen accumulation that cannot be excreted — the opposite of the goal.', 1: 'High-protein intake increases the kidney\'s workload and nitrogen waste — generally restricted or carefully managed in CKI.', 3: 'Increased sodium causes fluid retention and worsens hypertension — sodium is typically restricted.' }
+  },
+
+  // ── CH 44 MSK (9) ─────────────────────────────────────────────────────────
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child is in Buck\'s traction for a femur fracture. During morning assessment, the nurse notes redness and skin irritation beneath the traction bandage. Which action is the priority?',
+    options: [
+      'Remove the traction bandage to relieve pressure on the skin',
+      'Apply a moisture barrier lotion under the bandage',
+      'Assess that the skin remains intact and dry, then notify the provider',
+      'Document the finding and check again at the next scheduled assessment'
+    ],
+    answer: 2,
+    concept: 'Traction — Skin Integrity Priority',
+    rationale: 'The priority is to assess skin integrity — confirm the skin is intact and dry. Then notify the provider. The nurse cannot remove traction without a physician order. Confirmed test answer: skin intact and dry is the priority assessment.',
+    deepExplanation: 'Skin integrity under traction is the priority nursing concern. Breakdown indicates a developing pressure injury. The nurse assesses and reports; the physician decides on intervention. Applying lotion or removing traction without an order are both outside nursing scope.',
+    others: { 0: 'Removing traction requires a physician order — the nurse cannot do this unilaterally.', 1: 'Applying lotion without a provider order alters the traction setup and is not within nursing scope.', 3: 'Skin irritation under traction requires immediate assessment and notification — not deferred monitoring.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse rounds on a child in skeletal traction and notes the traction weights are resting on the floor. Which action should the nurse take?',
+    options: [
+      'Leave them — weights on the floor reduce excessive pulling force',
+      'Remove the weights temporarily and notify the provider',
+      'Reposition the child so the weights hang freely',
+      'Add more weight to compensate for the loss of traction force'
+    ],
+    answer: 2,
+    concept: 'Traction — Weights Must Hang Freely',
+    rationale: 'Traction weights must hang freely at all times — resting on the floor eliminates the therapeutic pulling force. The nurse repositions the child to restore proper alignment and allow the weights to hang freely. Confirmed test answer.',
+    deepExplanation: 'The therapeutic effect of traction depends entirely on the continuous pulling force created by the freely hanging weights. Resting on any surface = zero traction = treatment failure. The nurse repositions, never removes the weights.',
+    others: { 0: 'Weights on the floor completely eliminate traction — this is never acceptable.', 1: 'Weights require a physician order to remove — the nurse repositions the child to restore the pull.', 3: 'Adding weight requires a physician order and does not address the immediate problem.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child has a new forearm cast placed after a fracture reduction. The nurse performs neurovascular checks every 4 hours. The child now reports pain rated 9/10 that is unrelieved after IV morphine given 20 minutes ago. What does the nurse suspect?',
+    options: [
+      'Inadequate analgesic dosing — request an increased morphine order',
+      'Normal post-fracture pain — reassess in 1 hour',
+      'Compartment syndrome — notify the provider immediately',
+      'Cast syndrome — loosen the outer layer of the cast'
+    ],
+    answer: 2,
+    concept: 'Compartment Syndrome — Recognition',
+    rationale: 'Pain unrelieved by analgesics is the earliest and most critical sign of compartment syndrome. Combined with a new cast, this requires immediate provider notification — the cast may need to be bivalved to release pressure.',
+    deepExplanation: 'Unrelieved pain after adequate analgesia is the key distinguishing feature of compartment syndrome. Normal post-fracture pain responds to medication. Compartment syndrome pain is from ischemia — it does not respond to opioids. Confirmed test content — neurovascular checks q4hrs for new casts.',
+    others: { 0: 'Requesting more morphine delays recognition of a limb-threatening emergency.', 1: 'Unrelieved pain after IV morphine is never a "normal" finding to wait on.', 3: 'Cast syndrome (superior mesenteric artery syndrome) is a different condition — unrelieved pain in a new cast indicates compartment syndrome until proven otherwise.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The parents of a newborn with clubfoot ask what treatment will look like over the next few months. Which response by the nurse is most accurate?',
+    options: [
+      'Surgery is performed in the first week of life followed by casting',
+      'Bracing is applied immediately and maintained for 2 years',
+      'Weekly manipulation with serial cast changes initially, then transitioning to bracing',
+      'No treatment is needed until the child begins to walk at 12 months'
+    ],
+    answer: 2,
+    concept: 'Club Foot — Treatment',
+    rationale: 'Clubfoot treatment: weekly manipulation with serial cast changes initially, then every 2 weeks, followed by bracing or corrective shoes. Surgery is reserved for severe cases. Confirmed test answer: weekly casting.',
+    deepExplanation: 'The Ponseti method is the standard approach. The foot is most malleable in the newborn period — early intervention achieves the best outcomes. Weekly casting first, then biweekly, then bracing. Surgery is not the first step.',
+    others: { 0: 'Surgery is not the initial treatment — serial casting is the conservative first-line approach.', 1: 'Bracing follows the casting phase — it is not the initial treatment.', 3: 'Treatment begins in the newborn period — waiting until 12 months allows the deformity to become fixed.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A newborn with myelomeningocele is being prepared for surgery. Which pre-operative action is the nurse\'s priority?',
+    options: [
+      'Ensure all latex products are removed and the environment is latex-free',
+      'Apply a dry sterile dressing to keep the sac clean',
+      'Position the infant supine with a pillow under the sac',
+      'Administer IV antibiotics immediately before transport to the OR'
+    ],
+    answer: 0,
+    concept: 'Myelomeningocele — Latex Precaution Pre-op',
+    rationale: 'Children with myelomeningocele have a very high incidence of latex allergy from repeated early exposures. A latex-free environment must be confirmed before any procedure begins — latex anaphylaxis is life-threatening. Confirmed test answer.',
+    deepExplanation: 'The latex allergy risk in spina bifida is so significant that it is considered a universal precaution for this population. Every person in the OR must use latex-free gloves. All equipment — catheters, drapes, tubing — must be latex-free. This is confirmed before anything else.',
+    others: { 1: 'A dry dressing damages the delicate neural tissue — a MOIST sterile dressing is required.', 2: 'Supine places pressure on the sac — PRONE positioning is required pre-operatively.', 3: 'Prophylactic antibiotics are important but the latex-free environment safety check comes first.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A nursing student asks the preceptor to explain the difference between skin traction and skeletal traction. Which response is most accurate?',
+    options: [
+      'Skin traction uses pins in bone; skeletal traction uses bandages on the skin',
+      'Both types apply force identically — the difference is only the location of the fracture',
+      'Skin traction applies force through bandages on the skin surface; skeletal traction uses pins inserted into bone',
+      'Skeletal traction is used only for cervical spine injuries; skin traction is for all other fractures'
+    ],
+    answer: 2,
+    concept: 'Traction Types — Skin vs Skeletal',
+    rationale: 'Skin traction (Buck\'s, Bryant\'s) applies pulling force through bandages wrapped on the skin surface. Skeletal traction uses metal pins inserted directly into bone for stronger, more controlled force used for more complex fractures.',
+    deepExplanation: 'The key distinction: skin = surface bandage = less force, less invasive. Skeletal = bone pins = more force, more precise, more infection risk (pin site care required). Halo traction is skeletal traction for cervical/spine — it is not the only use for skeletal traction.',
+    others: { 0: 'This is reversed — skin uses bandages, skeletal uses pins.', 1: 'The mechanisms are fundamentally different — not just a location difference.', 3: 'Skeletal traction is used for multiple fracture types — not exclusively cervical spine.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: false,
+    type: 'sata',
+    stem: 'The nurse is listing the 6 P\'s of neurovascular assessment for a student. Which signs are included in this framework?',
+    options: [
+      'Pain',
+      'Pallor',
+      'Pitting edema',
+      'Pulselessness',
+      'Paresthesia',
+      'Paralysis'
+    ],
+    answerArr: [0, 1, 3, 4, 5],
+    concept: 'Neurovascular — 6 P\'s',
+    rationale: 'The 6 P\'s: Pain (earliest sign), Pallor, Pulselessness, Paresthesia (tingling), Paralysis, and Pressure (tightness). Pitting edema is not one of the 6 P\'s — the sixth P is Pressure/tightness in the compartment.',
+    perOptionExplanations: { 0: '<strong>Pain</strong> — earliest sign; unrelieved pain signals compartment syndrome before other signs develop.', 1: '<strong>Pallor</strong> — decreased blood flow causes skin distal to injury to appear pale.', 3: '<strong>Pulselessness</strong> — absent or diminished pulse indicates vascular compromise.', 4: '<strong>Paresthesia</strong> — tingling or numbness from nerve compression.', 5: '<strong>Paralysis</strong> — inability to move from nerve/muscle ischemia.' },
+    others: { 2: 'Pitting edema is not one of the 6 P\'s — the sixth P is Pressure (tightness felt in the compartment).' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child has been immobilized in traction for 5 days. The nurse performs deep breathing exercises with the child every 2 hours. Which complication is this intervention primarily preventing?',
+    options: [
+      'Pressure ulcers from bed contact',
+      'Contractures from muscle shortening',
+      'Pneumonia from shallow breathing and secretion pooling',
+      'Deep vein thrombosis from venous stasis'
+    ],
+    answer: 2,
+    concept: 'Immobility — Pneumonia Prevention',
+    rationale: 'Deep breathing exercises every 2 hours directly prevent pneumonia — the primary respiratory complication of immobility. Shallow breathing from pain and immobility leads to atelectasis and secretion pooling in dependent lung bases.',
+    deepExplanation: 'Immobility decreases diaphragmatic excursion and cough effectiveness. Secretions pool in the lung bases creating conditions for bacterial growth. Deep breathing expands collapsed alveoli and mobilizes secretions. This is one of the core immobility nursing interventions along with repositioning q2h.',
+    others: { 0: 'Repositioning q2h and pressure-relieving devices prevent pressure ulcers — not deep breathing.', 1: 'ROM exercises prevent contractures — not deep breathing.', 3: 'Ambulation and compression stockings prevent DVT — deep breathing primarily targets the respiratory system.' }
+  },
+  {
+    chapter: 'Ch 44 · MSK',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child with cerebral palsy has been receiving Baclofen via intrathecal pump for spasticity management. The child\'s parent calls reporting the child is extremely difficult to wake and seems confused. What is the most appropriate nursing response?',
+    options: [
+      'Reassure the parent that drowsiness is a normal Baclofen side effect',
+      'Ask the parent to bring the child in immediately — these symptoms indicate possible overdose or CNS depression',
+      'Advise the parent to hold the next dose and monitor at home',
+      'Recommend reducing the pump dose over the next 24 hours'
+    ],
+    answer: 1,
+    concept: 'Baclofen — CNS Depression',
+    rationale: 'Difficult to arouse plus confusion in a child on Baclofen indicates significant CNS depression — a serious adverse effect requiring immediate assessment. The parent should bring the child in immediately for evaluation.',
+    deepExplanation: 'Drowsiness is an expected mild Baclofen side effect. Difficult to arouse + confusion = excessive CNS depression = potential overdose or pump malfunction. Intrathecal Baclofen delivers drug directly to the CSF — overdose can be life-threatening. Immediate assessment is required.',
+    others: { 0: 'Mild drowsiness is expected — difficulty arousing and confusion indicate a serious adverse effect, not a normal side effect.', 2: 'Holding a dose does not address the current CNS depression the child is experiencing.', 3: 'The parent cannot reduce the intrathecal pump dose at home — immediate medical evaluation is required.' }
+  },
+
+  // ── CH 45 SKIN (9) ────────────────────────────────────────────────────────
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A nurse is assessing a child\'s burn injury. The affected area has fluid-filled blisters, is moist and weeping, and the child is in severe pain. The nurse documents this as which type of burn?',
+    options: [
+      'First degree — superficial',
+      'Second degree — partial thickness',
+      'Third degree — full thickness',
+      'Superficial partial thickness only involving epidermis'
+    ],
+    answer: 1,
+    concept: 'Burns — Second Degree',
+    rationale: 'Second degree (partial thickness) burns: epidermis and dermis involved, presenting with blisters, moist skin, and intense pain (nerve endings exposed but intact). Confirmed test answer: 2nd degree = wet, blisters.',
+    deepExplanation: 'The moisture and blister formation are the defining features of 2nd degree burns. 1st degree = red, dry, painful (epidermis only). 2nd degree = blisters, moist, very painful. 3rd degree = white/charred, painless initially (nerve endings destroyed).',
+    others: { 0: 'First degree burns are red, dry, painful — no blisters.', 2: 'Third degree burns appear white or charred and are initially painless — nerve endings are destroyed.', 3: 'This is not a standard burn classification term — the correct term is second degree or partial thickness.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with known atopic dermatitis has a scheduled clinic visit. The provider orders laboratory work. Which result does the nurse most expect to be elevated?',
+    options: [
+      'Erythrocyte Sedimentation Rate',
+      'C-reactive protein',
+      'Immunoglobulin E',
+      'White blood cell count'
+    ],
+    answer: 2,
+    concept: 'Atopic Dermatitis — IgE',
+    rationale: 'Atopic dermatitis (eczema) is associated with elevated IgE — the immunoglobulin involved in type I hypersensitivity reactions. Elevated IgE reflects the allergic/atopic component of eczema. Confirmed test answer.',
+    deepExplanation: 'IgE is the allergy antibody — it is elevated in all atopic conditions: eczema, asthma, and allergic rhinitis. ESR measures nonspecific inflammation. CRP is another inflammation marker. WBC elevation indicates infection or immune activation — not specific to atopic dermatitis.',
+    others: { 0: 'ESR is elevated in systemic inflammatory conditions — not the specific marker for atopic dermatitis.', 1: 'CRP indicates inflammation but is not the specific lab finding for atopic dermatitis.', 3: 'WBC elevation indicates infection or immune activation — atopic dermatitis is primarily associated with elevated IgE.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A school-age child presents with scaly patches on the scalp where the hair appears to have broken off at the root. Which laboratory test does the nurse anticipate to confirm the diagnosis?',
+    options: [
+      'IgE level',
+      'KOH preparation',
+      'Patch testing',
+      'ESR'
+    ],
+    answer: 1,
+    concept: 'Tinea Capitis — Diagnosis',
+    rationale: 'Tinea capitis (scalp ringworm) is a fungal infection presenting with scaly patches and hair breakage. A KOH (potassium hydroxide) preparation dissolves skin cells and reveals fungal hyphae under microscopy, confirming the fungal diagnosis.',
+    deepExplanation: 'KOH prep is the bedside diagnostic for fungal infections — it quickly confirms the presence of fungal organisms. Hair loss from tinea capitis was confirmed as the test-specific clinical detail. Treatment requires oral griseofulvin because topical antifungals cannot penetrate the hair follicle.',
+    others: { 0: 'IgE is elevated in atopic conditions like eczema — not the diagnostic test for fungal infection.', 2: 'Patch testing identifies contact allergens — not fungal infections.', 3: 'ESR measures systemic inflammation — not specific to fungal skin infections.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A 6-month-old has had a diaper rash for one week. Despite frequent diaper changes and zinc oxide, small red spots have appeared beyond the main rash border. Which treatment should the nurse anticipate?',
+    options: [
+      'Increase the frequency of zinc oxide application',
+      'Apply topical hydrocortisone to reduce inflammation',
+      'Topical antifungal cream such as miconazole or clotrimazole',
+      'Oral antibiotics for bacterial superinfection'
+    ],
+    answer: 2,
+    concept: 'Candidiasis — Diaper Rash',
+    rationale: 'Satellite lesions (spots beyond the main rash border) that do not respond to zinc oxide indicate Candidiasis. Antifungal cream (miconazole or clotrimazole) is required. Confirmed test answer.',
+    deepExplanation: 'Satellite lesions are pathognomonic for Candidiasis diaper rash — they extend beyond the irritated area as fungal organisms spread. Zinc oxide has no antifungal activity. Hydrocortisone suppresses immunity and worsens fungal infections.',
+    others: { 0: 'Zinc oxide has no antifungal activity — Candidiasis will not resolve with more zinc oxide.', 1: 'Hydrocortisone suppresses immune defenses and worsens Candidiasis.', 3: 'Candidiasis is fungal, not bacterial — oral antibiotics would not treat it and may worsen yeast growth.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A burn patient is admitted to the unit. The nurse understands that fluid replacement is most critical during which time period?',
+    options: [
+      'The 24–48 hours after wound debridement',
+      'The first 24 hours after the burn, especially the first 2 hours',
+      'Only during the first 6 hours then fluids are reduced',
+      'The second 24-hour period when inflammation peaks'
+    ],
+    answer: 1,
+    concept: 'Burns — Fluid Resuscitation Timing',
+    rationale: 'Fluid replacement is most critical in the first 24 hours, especially the first 2 hours. Capillary permeability increases dramatically after a major burn, causing massive fluid shifts. Lactated Ringer\'s is the fluid of choice.',
+    deepExplanation: 'The first 2 hours is specifically highlighted in your notes as a testable detail. Massive plasma leaks into burned tissue and interstitium early on. Aggressive early resuscitation prevents hypovolemic shock. After 24–48 hours capillary integrity begins to restore.',
+    others: { 0: 'Debridement occurs after stabilization — fluid resuscitation starts immediately, not after debridement.', 2: 'Limiting fluids after 6 hours would allow hypovolemic shock to develop.', 3: 'The first 24 hours — not the second — is the critical resuscitation window.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: false,
+    type: 'standard',
+    stem: 'The nurse is reviewing a chart for a child being discharged with a diagnosis of impetigo. Which statement in the discharge instructions requires follow-up from the nurse educator?',
+    options: [
+      '"Apply topical mupirocin to the affected area three times daily."',
+      '"Your child may return to school immediately since impetigo is not contagious once visible."',
+      '"Keep the affected area clean and avoid touching or scratching the lesions."',
+      '"Oral antibiotics have been prescribed for the extensive involvement."'
+    ],
+    answer: 1,
+    concept: 'Impetigo — Contagion Teaching',
+    rationale: 'Impetigo is highly contagious — the child should remain home from school until 24 hours of antibiotic treatment has been completed, not returned immediately. The instruction that it is "not contagious once visible" is incorrect and requires follow-up.',
+    deepExplanation: 'Impetigo spreads easily through direct contact with the lesions or contaminated surfaces. The honey-colored crust is infectious. School exclusion until treatment has begun protects classmates. This is a wrong teaching question — identifying the incorrect statement.',
+    others: { 0: 'Applying mupirocin three times daily is correct treatment instruction.', 2: 'Keeping the area clean and avoiding scratching is correct.', 3: 'Oral antibiotics for extensive impetigo involvement is appropriate treatment.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child develops a rash involving the lips, eyes, and skin that spreads rapidly after starting a new antibiotic. The nurse recognizes this as a medical emergency and documents which condition?',
+    options: [
+      'Severe contact dermatitis from antibiotic allergy',
+      'Stevens-Johnson Syndrome',
+      'Impetigo spreading from a localized infection',
+      'Atopic dermatitis flare triggered by the new medication'
+    ],
+    answer: 1,
+    concept: 'Stevens-Johnson Syndrome — Recognition',
+    rationale: 'Stevens-Johnson Syndrome is a severe hypersensitivity reaction triggered by medications. It involves BOTH skin AND mucous membranes (lips, eyes, genitals) — this is what makes it a medical emergency. Rapid provider notification is required.',
+    deepExplanation: 'The mucous membrane involvement is the hallmark that elevates this to an emergency — it distinguishes SJS from simple drug rash. Medication trigger (antibiotics, anticonvulsants) + mucous membrane blistering + rapid spread = SJS.',
+    others: { 0: 'Contact dermatitis is localized to the contact area — not widespread with mucous membrane involvement.', 2: 'Impetigo causes honey-colored crusting — not blistering of mucous membranes.', 3: 'Atopic dermatitis causes chronic dry itchy skin — not acute blistering with mucous membrane involvement.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: false,
+    type: 'sata',
+    stem: 'A 17-year-old is starting Isotretinoin for severe cystic acne. The nurse provides medication education. Which points must be included?',
+    options: [
+      'Two forms of contraception are mandatory due to severe teratogenicity',
+      'Monthly laboratory monitoring is required throughout treatment',
+      'Isotretinoin is appropriate for mild acne that has not responded to face wash',
+      'Mood changes, depression, or suicidal thoughts must be reported immediately',
+      'Avoid prolonged sun exposure — photosensitivity is a known side effect',
+      'Dry skin and dry lips are expected and should be managed with moisturizer'
+    ],
+    answerArr: [0, 1, 3, 4, 5],
+    concept: 'Isotretinoin — Education',
+    rationale: 'Isotretinoin education: two forms of contraception (teratogenic), monthly labs (lipids and liver), report depression/suicidal ideation immediately, photosensitivity precautions, and expect dry skin/lips. Reserved for severe, treatment-resistant acne — not mild acne.',
+    perOptionExplanations: { 0: '<strong>Two forms of contraception</strong> — mandatory; severe teratogenicity causes major birth defects.', 1: '<strong>Monthly labs</strong> — monitors cholesterol, triglycerides, and liver enzymes.', 3: '<strong>Report mood changes</strong> — depression and suicidal ideation are known adverse effects.', 4: '<strong>Photosensitivity</strong> — sunscreen required; skin is more UV-sensitive during treatment.', 5: '<strong>Dry skin and lips</strong> — expected from reduced sebum production; use moisturizer and lip balm.' },
+    others: { 2: 'Isotretinoin is ONLY for severe, treatment-resistant acne — not for mild acne.' }
+  },
+  {
+    chapter: 'Ch 45 · Skin',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child with MRSA is admitted. Which treatment does the nurse anticipate?',
+    options: [
+      'Oral cephalexin',
+      'Topical mupirocin only',
+      'IV vancomycin',
+      'Oral amoxicillin'
+    ],
+    answer: 2,
+    concept: 'MRSA — Treatment',
+    rationale: 'MRSA (methicillin-resistant Staph aureus) is resistant to the entire beta-lactam antibiotic class (penicillins, cephalosporins). Vancomycin targets the cell wall through a different mechanism that MRSA cannot resist.',
+    deepExplanation: 'The "methicillin-resistant" in MRSA means resistant to all beta-lactams — cephalexin (cephalosporin) and amoxicillin (penicillin) are both beta-lactams and will not work. Vancomycin is the IV treatment. Topical mupirocin treats colonization in the nares — not systemic MRSA infection.',
+    others: { 0: 'Cephalexin is a cephalosporin — a beta-lactam antibiotic that MRSA is resistant to.', 1: 'Topical mupirocin treats impetigo and nasal MRSA colonization — not systemic MRSA infection.', 3: 'Amoxicillin is a penicillin — MRSA is resistant to all beta-lactam antibiotics.' }
+  },
+
+  // ── CH 46 HEME/ONCO (8) ──────────────────────────────────────────────────
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child receiving a PRBC transfusion develops fever, chills, and back pain 12 minutes into the infusion. What is the nurse\'s first action?',
+    options: [
+      'Slow the transfusion rate to 25 mL/hr and notify the provider',
+      'Stop the infusion immediately',
+      'Administer diphenhydramine IV and continue at a slower rate',
+      'Draw a STAT CBC before taking any other action'
+    ],
+    answer: 1,
+    concept: 'Transfusion Reaction — Stop Infusion',
+    rationale: 'The first action in any suspected transfusion reaction is to STOP the infusion immediately. Then maintain IV access with normal saline, notify the provider, and send the blood bag to the blood bank. Confirmed test answer.',
+    deepExplanation: 'Fever, chills, and back pain suggest a hemolytic transfusion reaction from incompatible blood. Continuing even at a slower rate continues exposing the child to incompatible antigens. Stop first, then follow the reaction protocol.',
+    others: { 0: 'Slowing the rate continues the transfusion with potentially incompatible blood — the infusion must be stopped completely.', 2: 'Diphenhydramine and continuing is for mild allergic reactions (urticaria) only — fever and back pain indicate a more serious reaction.', 3: 'Drawing labs without stopping the infusion delays the critical first intervention.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'standard',
+    stem: 'A child with sickle cell disease is admitted in vaso-occlusive crisis. The nurse implements which priority intervention?',
+    options: [
+      'Administer 2L O2 via nasal cannula automatically',
+      'Place on contact precautions and restrict visitors',
+      'Initiate aggressive IV hydration',
+      'Obtain blood cultures and start broad-spectrum antibiotics'
+    ],
+    answer: 2,
+    concept: 'Sickle Cell Crisis — Hydration Priority',
+    rationale: 'Aggressive IV hydration is the priority intervention — it reduces blood viscosity, decreases sickling, and improves microvascular flow. Confirmed test answer: hydration is the priority in vaso-occlusive crisis.',
+    deepExplanation: 'Hydration directly addresses the pathophysiology. Oxygen is given only if hypoxia is documented. Contact precautions are not indicated — sickle cell is not contagious. Antibiotics treat infection, not vaso-occlusive crisis.',
+    others: { 0: 'Oxygen is given only when hypoxia is documented — automatic O2 without indication is not the priority.', 1: 'Contact precautions are for contagious conditions — sickle cell disease is not infectious.', 3: 'Antibiotics treat infection — not vaso-occlusive crisis without signs of infection.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is educating the family of a child with sickle cell disease about what can trigger a crisis. Which factor does the nurse identify as one of the most common and dangerous triggers?',
+    options: [
+      'Excessive physical activity in warm temperatures',
+      'High-fat diet and processed foods',
+      'Infection',
+      'Fluorescent lighting and screen exposure'
+    ],
+    answer: 2,
+    concept: 'Sickle Cell — Crisis Triggers',
+    rationale: 'Infection is one of the most common and dangerous sickle cell crisis triggers. Other major triggers include dehydration, hypoxia, cold temperatures, stress, and high altitude. Confirmed test answer: infection predisposes vaso-occlusive crisis.',
+    deepExplanation: 'Infection creates a systemic inflammatory state that promotes sickling. This is why sickle cell children receive prophylactic penicillin in early childhood and comprehensive vaccination schedules. The inflammatory response from even minor infections can precipitate major crises.',
+    others: { 0: 'Mild physical activity in warm weather is generally safe — cold temperatures are the concern, not warm.', 1: 'High-fat diet is not a documented sickle cell crisis trigger.', 3: 'Lighting and screens are not sickle cell triggers.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is reviewing lab results for a child with suspected hemophilia. Which result most directly supports this diagnosis?',
+    options: [
+      'Decreased platelet count with normal aPTT',
+      'Prolonged aPTT with normal platelets and normal PT',
+      'Decreased hemoglobin with elevated total iron-binding capacity',
+      'Elevated white blood cell count with blast cells'
+    ],
+    answer: 1,
+    concept: 'Hemophilia — Lab Findings',
+    rationale: 'Hemophilia is a clotting factor deficiency (VIII or IX) in the intrinsic pathway → prolonged aPTT. Platelets and PT are both normal — platelet function is intact and the extrinsic pathway is unaffected. Confirmed test answer.',
+    deepExplanation: 'aPTT = intrinsic pathway. PT = extrinsic pathway. Hemophilia affects only the intrinsic pathway — so only the aPTT is prolonged. Platelets work fine because hemophilia is a clotting factor problem, not a platelet problem. Decreased Hgb + elevated TIBC = iron deficiency anemia.',
+    others: { 0: 'Decreased platelet count with normal aPTT describes ITP — not hemophilia.', 2: 'Decreased Hgb and elevated TIBC describe iron deficiency anemia.', 3: 'Elevated WBC with blast cells suggests leukemia — not hemophilia.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'standard',
+    stem: 'The nurse is triaging four patients in the hematology clinic. Which patient should be seen first?',
+    options: [
+      'A 2-year-old with mild pallor and fatigue from a diet consisting mainly of whole milk',
+      'A 15-year-old with heavy menstrual periods, pallor, and a hemoglobin of 7.2 g/dL',
+      'A 10-year-old with brittle nails and mild tachycardia',
+      'A 6-year-old eating ice compulsively suspected of pica'
+    ],
+    answer: 1,
+    concept: 'Iron Deficiency Anemia — Priority Patient',
+    rationale: 'The 15-year-old with heavy menstrual bleeding and a hemoglobin of 7.2 g/dL is the priority — severely low Hgb combined with active ongoing blood loss is the most acute presentation. Confirmed test answer.',
+    deepExplanation: 'Normal hemoglobin for a 15-year-old is approximately 12–16 g/dL. A Hgb of 7.2 with active blood loss is significantly low and acutely dangerous. The other patients have important but less acute presentations — dietary deficiency, mild symptoms, or behavioral signs without a known Hgb.',
+    others: { 0: 'Dietary iron deficiency in a toddler is important but chronic — less acute than Hgb 7.2 with active blood loss.', 2: 'Brittle nails and mild tachycardia suggest chronic iron deficiency — less acute than Hgb 7.2 with active bleeding.', 3: 'Pica is a sign of iron deficiency but without a known Hgb or active blood loss — less urgent.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: true,
+    type: 'sata',
+    stem: 'A child receiving chemotherapy is placed on neutropenic precautions. Which nursing actions are correct?',
+    options: [
+      'Place the child in reverse isolation to protect against environmental organisms',
+      'Allow fresh flowers delivered by the family to improve the child\'s mood',
+      'Monitor temperature closely — any fever is treated as infection until proven otherwise',
+      'Avoid rectal temperatures and rectal medications',
+      'Ensure no live vaccines are administered during this period',
+      'Encourage large group visits from classmates to support the child'
+    ],
+    answerArr: [0, 2, 3, 4],
+    concept: 'Neutropenic Precautions',
+    rationale: 'Neutropenic precautions: reverse isolation, fever monitoring, no rectal temps or meds, no live vaccines. Fresh flowers are prohibited — they harbor organisms dangerous to immunocompromised patients. Visitors are limited and screened, not encouraged in groups.',
+    perOptionExplanations: { 0: '<strong>Reverse isolation</strong> — protects the child FROM the environment.', 2: '<strong>Monitor fever</strong> — any temperature elevation is a sign of infection in a neutropenic patient.', 3: '<strong>No rectal temps or meds</strong> — rectal procedures create infection pathways.', 4: '<strong>No live vaccines</strong> — the child cannot respond safely to live attenuated organisms.' },
+    others: { 1: 'Fresh flowers are strictly prohibited — they harbor bacteria and fungal spores dangerous to neutropenic patients.', 5: 'Large group visits increase infection exposure — visitors are limited and must be screened for illness.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A 4-year-old develops pinpoint red dots that do not blanch when pressed, two weeks after recovering from a viral illness. Which condition does the nurse suspect?',
+    options: [
+      'Hemophilia presenting with surface bleeding',
+      'Impetigo spreading from a facial infection',
+      'Immune Thrombocytopenic Purpura',
+      'Meningococcemia requiring isolation'
+    ],
+    answer: 2,
+    concept: 'ITP — Recognition',
+    rationale: 'ITP is immune-mediated platelet destruction following viral illness. Non-blanching petechiae (pinpoint spots that do not turn white with pressure) develop from thrombocytopenia. Post-viral onset in a young child is the classic presentation.',
+    deepExplanation: 'Non-blanching = blood outside vessels, cannot be pushed away by pressure. Blanching = blood inside capillaries. Post-viral + non-blanching petechiae = ITP. The post-viral timing is the key history. Hemophilia causes deep tissue/joint bleeding, not surface petechiae.',
+    others: { 0: 'Hemophilia causes deep tissue and joint bleeding — not surface petechiae. Hemophilia is also genetic, not post-viral.', 1: 'Impetigo causes honey-colored crusting — not non-blanching petechiae.', 3: 'Meningococcemia presents with rapidly spreading purpura plus high fever and sepsis — a more acute presentation than isolated post-viral petechiae.' }
+  },
+  {
+    chapter: 'Ch 46 · Heme/Onco',
+    confirmed: false,
+    type: 'standard',
+    stem: 'A child is admitted with the classic triad of Hemolytic Uremic Syndrome. Which three findings does the nurse expect to document?',
+    options: [
+      'Fever, rash, and lymphadenopathy',
+      'Hemolytic anemia, thrombocytopenia, and acute kidney injury',
+      'Proteinuria, hypoalbuminemia, and hyperlipidemia',
+      'Prolonged aPTT, hemarthrosis, and normal platelets'
+    ],
+    answer: 1,
+    concept: 'HUS — Classic Triad',
+    rationale: 'HUS triad: hemolytic anemia (pallor, fatigue), thrombocytopenia (purpura, bleeding risk), and AKI (oliguria, elevated creatinine). Usually follows E. coli O157:H7 gastrointestinal infection.',
+    deepExplanation: 'Each element of the triad has specific nursing implications: anemia → monitor Hgb and signs of pallor; thrombocytopenia → bleeding precautions; AKI → strict I&O, monitor electrolytes especially potassium. The E. coli trigger through contaminated food is the epidemiological clue.',
+    others: { 0: 'Fever, rash, and lymphadenopathy suggest a viral illness or Kawasaki disease — not HUS.', 2: 'Proteinuria, hypoalbuminemia, and hyperlipidemia describe Nephrotic Syndrome.', 3: 'Prolonged aPTT with hemarthrosis and normal platelets describes hemophilia.' }
+  }
+];
+
+// ── STATE ──────────────────────────────────────
+let current = 0, totalPoints = 0, answered = false;
+let selectedSATA = new Set(), missedItems = [], chapterScores = {};
+const TOTAL = questions.length;
+const LETTERS = ['A','B','C','D','E','F'];
+
+function el(tag, cls) { const e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+function updateHeader() {
+  document.getElementById('header-score').textContent = `${totalPoints.toFixed(1)} / ${TOTAL}`;
+  document.getElementById('progress-bar').style.width = `${(current / TOTAL) * 100}%`;
+}
+
+function trackChapter(chapter, pts, total) {
+  if (!chapterScores[chapter]) chapterScores[chapter] = { pts: 0, total: 0 };
+  chapterScores[chapter].pts += pts;
+  chapterScores[chapter].total += total;
+}
+
+function recordMiss(q, qNum, answerText, pts) {
+  missedItems.push({ q, qNum, answerText, pts });
+}
+
+function startExam() {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+}
+
+function render() {
+  answered = false; selectedSATA = new Set();
+  const q = questions[current];
+  const card = document.getElementById('q-card');
+  card.innerHTML = '';
+
+  const meta = el('div', 'q-meta');
+  meta.innerHTML = `<span class="q-chapter">${q.chapter}</span><span class="q-num">${current + 1} / ${TOTAL}</span>`;
+  card.appendChild(meta);
+
+  if (q.confirmed) {
+    const banner = el('div', 'confirmed-banner');
+    banner.innerHTML = `<span class="confirmed-dot"></span>Confirmed Test Item — recalled from actual exam`;
+    card.appendChild(banner);
+  }
+
+  const body = el('div', 'q-body');
+  const stem = el('div', 'q-stem'); stem.textContent = q.stem; body.appendChild(stem);
+  if (q.type === 'sata') {
+    const inst = el('div', 'q-instruction'); inst.textContent = 'Select all that apply.'; body.appendChild(inst);
+  }
+  card.appendChild(body);
+
+  const opts = el('div', 'options');
+  q.options.forEach((txt, i) => {
+    const btn = el('button', 'opt'); btn.dataset.idx = i;
+    btn.innerHTML = `<span class="opt-indicator">${LETTERS[i]}</span><span>${txt}</span>`;
+    btn.onclick = q.type === 'standard' ? () => selectStandard(i) : () => toggleSATA(i, btn);
+    opts.appendChild(btn);
+  });
+  card.appendChild(opts);
+
+  if (q.type === 'sata') {
+    const sw = el('div', 'sata-submit-wrap');
+    const sb = el('button', 'sata-btn'); sb.id = 'sata-btn'; sb.textContent = 'Submit Answer';
+    sb.onclick = submitSATA; sw.appendChild(sb); card.appendChild(sw);
+  }
+
+  const rat = el('div', 'rationale-wrap'); rat.id = 'rationale'; card.appendChild(rat);
+  const nw = el('div', 'next-wrap'); nw.id = 'next-wrap';
+  const nb = el('button', 'next-btn');
+  nb.innerHTML = current === TOTAL - 1 ? 'See Final Results <span class="next-arrow">→</span>' : 'Next Question <span class="next-arrow">→</span>';
+  nb.onclick = nextQ; nw.appendChild(nb); card.appendChild(nw);
+
+  updateHeader();
+  card.style.animation = 'none';
+  requestAnimationFrame(() => { card.style.animation = 'fadeUp 0.3s ease both'; });
+}
+
+function selectStandard(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const isCorrect = i === q.answer;
+  const pts = isCorrect ? 1 : 0;
+  totalPoints += pts;
+  if (!isCorrect) recordMiss(q, current + 1, q.options[q.answer], null);
+  trackChapter(q.chapter, pts, 1);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    if (idx === q.answer) btn.classList.add(isCorrect ? 'correct' : 'missed');
+    if (idx === i && !isCorrect) btn.classList.add('wrong');
+    if (idx !== q.answer && idx !== i) btn.classList.add('dimmed');
+  });
+  showRationaleStandard(isCorrect, q);
+}
+
+function toggleSATA(i, btn) {
+  if (answered) return;
+  if (selectedSATA.has(i)) { selectedSATA.delete(i); btn.classList.remove('selected'); }
+  else { selectedSATA.add(i); btn.classList.add('selected'); }
+}
+
+function submitSATA() {
+  if (answered || selectedSATA.size === 0) return;
+  answered = true;
+  const q = questions[current];
+  const sel = [...selectedSATA];
+  const correct = q.answerArr;
+  const correctSel = sel.filter(i => correct.includes(i));
+  const wrongSel = sel.filter(i => !correct.includes(i));
+  const pts = Math.max(0, (correctSel.length - wrongSel.length) / correct.length);
+  totalPoints += pts; trackChapter(q.chapter, pts, 1);
+  if (pts < 1) recordMiss(q, current + 1, correct.map(i => q.options[i]).join('; '), pts);
+  document.querySelectorAll('.opt').forEach(btn => {
+    btn.classList.add('disabled');
+    const idx = parseInt(btn.dataset.idx);
+    btn.classList.remove('selected');
+    if (correct.includes(idx) && sel.includes(idx)) btn.classList.add('correct');
+    else if (!correct.includes(idx) && sel.includes(idx)) btn.classList.add('wrong');
+    else if (correct.includes(idx) && !sel.includes(idx)) btn.classList.add('missed');
+    else btn.classList.add('dimmed');
+  });
+  const sb = document.getElementById('sata-btn');
+  if (sb) sb.style.display = 'none';
+  showRationaleSATA(pts, q);
+}
+
+function showRationaleStandard(isCorrect, q) {
+  const rat = document.getElementById('rationale');
+  const hClass = isCorrect ? 'correct-h' : 'wrong-h';
+  const verdict = isCorrect ? '✓ Correct' : '✗ Incorrect';
+  const badgeClass = isCorrect ? 'correct-badge' : 'wrong-badge';
+  const badgeText = isCorrect ? 'FULL CREDIT' : 'NO CREDIT';
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      const i = parseInt(idx);
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter ${i === q.answer ? 'c' : 'w'}">${LETTERS[i]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${LETTERS[q.answer]} — ${q.options[q.answer]}</div>
+      <div class="rat-core">${q.rationale}</div>
+      <div class="rat-section-title">Why the correct answer is correct</div>
+      <div class="rat-core" style="margin-bottom:${othersHTML ? '16px' : '0'}">${q.deepExplanation}</div>
+      ${othersHTML}
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function showRationaleSATA(pts, q) {
+  const rat = document.getElementById('rationale');
+  const isFullCredit = pts === 1, isNoCredit = pts === 0;
+  const hClass = isFullCredit ? 'correct-h' : isNoCredit ? 'wrong-h' : 'partial-h';
+  const verdict = isFullCredit ? '✓ Correct' : isNoCredit ? '✗ Incorrect' : '◑ Partial Credit';
+  const badgeClass = isFullCredit ? 'correct-badge' : isNoCredit ? 'wrong-badge' : 'partial-badge';
+  const badgeText = isFullCredit ? 'FULL CREDIT' : isNoCredit ? 'NO CREDIT' : `${Math.round(pts*100)}% CREDIT`;
+  let perHTML = '';
+  if (q.perOptionExplanations) {
+    perHTML = `<div class="rat-section-title">Correct answers explained</div>`;
+    Object.entries(q.perOptionExplanations).forEach(([idx, txt]) => {
+      perHTML += `<div class="rat-option-row"><span class="rat-opt-letter c">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  let othersHTML = '';
+  if (q.others) {
+    othersHTML = `<div class="rat-section-title" style="margin-top:14px">Why others are wrong</div>`;
+    Object.entries(q.others).forEach(([idx, txt]) => {
+      othersHTML += `<div class="rat-option-row"><span class="rat-opt-letter w">${LETTERS[parseInt(idx)]}</span><div class="rat-opt-text">${txt}</div></div>`;
+    });
+  }
+  rat.innerHTML = `
+    <div class="rat-header ${hClass}"><span class="rat-verdict">${verdict}</span><span class="rat-badge ${badgeClass}">${badgeText}</span></div>
+    <div class="rat-body">
+      <span class="rat-concept">${q.concept}</span>
+      <div class="rat-answer">Answer: ${q.answerArr.map(i => LETTERS[i]).join(', ')} — ${q.answerArr.map(i => q.options[i]).join('; ')}</div>
+      <div class="rat-core">${q.rationale}</div>
+      ${perHTML}${othersHTML}
+      <div class="sata-legend">
+        <div class="legend-item"><div class="legend-dot c"></div>Correct & selected</div>
+        <div class="legend-item"><div class="legend-dot m"></div>Correct but missed</div>
+        <div class="legend-item"><div class="legend-dot w"></div>Incorrect & selected</div>
+      </div>
+    </div>`;
+  rat.classList.add('show');
+  document.getElementById('next-wrap').classList.add('show');
+}
+
+function nextQ() {
+  current++;
+  if (current >= TOTAL) showResults();
+  else render();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  const rs = document.getElementById('results-screen');
+  rs.style.display = 'block';
+
+  const pct = Math.round((totalPoints / TOTAL) * 100);
+  let msg = pct >= 90 ? 'Outstanding — exam ready.' : pct >= 80 ? 'Strong performance. Review the misses.' : pct >= 70 ? 'Passing. Focus on the weak chapters.' : 'Review carefully before the exam.';
+
+  let chapterGrid = '';
+  Object.entries(chapterScores).forEach(([ch, s]) => {
+    const p = s.pts / s.total;
+    const cls = p >= 0.85 ? 'full' : p >= 0.65 ? 'partial' : 'low';
+    chapterGrid += `<div class="results-ch-pill"><div class="results-ch-name">${ch}</div><div class="results-ch-score ${cls}">${s.pts.toFixed(1)} / ${s.total} (${Math.round(p*100)}%)</div></div>`;
+  });
+
+  let missedHTML = '';
+  if (missedItems.length > 0) {
+    missedHTML = `<div class="missed-section"><div class="missed-title">Missed Concepts (${missedItems.length})</div>`;
+    missedItems.forEach(m => {
+      const creditLine = m.pts !== null ? ` <span style="color:var(--partial);font-size:11px;">(${Math.round(m.pts*100)}% credit)</span>` : '';
+      const confirmedTag = m.q.confirmed ? `<span class="missed-item-confirmed">★ confirmed test item</span>` : '';
+      missedHTML += `
+        <div class="missed-item">
+          <div class="missed-item-tags">
+            <span class="missed-item-concept">${m.q.concept}</span>${confirmedTag}
+          </div>
+          <div class="missed-item-q"><strong>Q${m.qNum}:</strong> ${m.q.stem.substring(0, 110)}...</div>
+          <div class="missed-item-ans">✓ ${m.answerText}${creditLine}</div>
+          <div class="missed-item-rat">${m.q.rationale}</div>
+        </div>`;
+    });
+    missedHTML += '</div>';
+  }
+
+  rs.innerHTML = `
+    <div class="results-hero">
+      <div class="results-grade">${totalPoints.toFixed(1)}/${TOTAL}</div>
+      <div class="results-pct">${pct}%</div>
+      <div class="results-msg">${msg}</div>
+      <div class="results-chapter-grid">${chapterGrid}</div>
+    </div>
+    ${missedHTML}
+    <button class="retry-btn" onclick="restart()">Retake Exam</button>`;
+}
+
+function restart() {
+  current = 0; totalPoints = 0; answered = false;
+  selectedSATA = new Set(); missedItems = []; chapterScores = {};
+  document.getElementById('results-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  render();
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
